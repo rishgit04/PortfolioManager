@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portified - Smart Portfolio Manager</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-chart-line"></i>
+                <span>Portified</span>
+            </div>
+            <div class="nav-menu">
+                <button class="nav-btn active" data-tab="dashboard">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </button>
+                <button class="nav-btn" data-tab="portfolio">
+                    <i class="fas fa-briefcase"></i> Portfolio
+                </button>
+                <button class="nav-btn" data-tab="analytics">
+                    <i class="fas fa-chart-bar"></i> Analytics
+                </button>
+                <button class="nav-btn" data-tab="add-asset">
+                    <i class="fas fa-plus"></i> Add Asset
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <!-- Dashboard Tab -->
+        <section id="dashboard" class="tab-content active">
+            <div class="dashboard-header">
+                <h1>Portfolio Dashboard</h1>
+                <div class="date-time" id="current-time"></div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card total-value">
+                    <div class="stat-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="total-value">₹0</h3>
+                        <p>Total Portfolio Value</p>
+                        <span class="stat-change" id="total-change">+0%</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="total-assets">0</h3>
+                        <p>Total Assets</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="best-performer">-</h3>
+                        <p>Best Performer</p>
+                        <span class="stat-change positive" id="best-change">+0%</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="avg-return">0%</h3>
+                        <p>Average Return</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="portfolioChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Portfolio Tab -->
+        <section id="portfolio" class="tab-content">
+            <div class="portfolio-header">
+                <h2>My Portfolio</h2>
+                <div class="portfolio-controls">
+                    <input type="text" id="search-assets" placeholder="Search assets..." class="search-input">
+                    <select id="sort-by" class="sort-select">
+                        <option value="name">Sort by Name</option>
+                        <option value="value">Sort by Value</option>
+                        <option value="change">Sort by Change</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="portfolio-grid" id="portfolio-grid">
+                <!-- Portfolio items will be dynamically generated -->
+            </div>
+        </section>
+
+        <!-- Analytics Tab -->
+        <section id="analytics" class="tab-content">
+            <div class="analytics-header">
+                <h2>Performance Analytics</h2>
+                <div class="chart-controls">
+                    <button class="chart-btn active" data-chart="line">Line Chart</button>
+                    <button class="chart-btn" data-chart="bar">Bar Chart</button>
+                    <button class="chart-btn" data-chart="pie">Pie Chart</button>
+                </div>
+            </div>
+            
+            <div class="analytics-container">
+                <div class="chart-wrapper">
+                    <canvas id="analyticsChart"></canvas>
+                </div>
+                
+                <div class="performance-metrics">
+                    <div class="metric-card">
+                        <h4>Portfolio Growth</h4>
+                        <div class="metric-value positive" id="portfolio-growth">+12.5%</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4>Risk Score</h4>
+                        <div class="metric-value" id="risk-score">Medium</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4>Diversification</h4>
+                        <div class="metric-value" id="diversification">Good</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Add Asset Tab -->
+        <section id="add-asset" class="tab-content">
+            <div class="add-asset-container">
+                <h2>Add New Asset</h2>
+                <form id="add-asset-form" class="asset-form">
+                    <div class="form-group">
+                        <label for="asset-name">Asset Name</label>
+                        <input type="text" id="asset-name" required placeholder="e.g., Apple Inc.">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="asset-symbol">Symbol</label>
+                        <input type="text" id="asset-symbol" required placeholder="e.g., AAPL">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="asset-quantity">Quantity</label>
+                            <input type="number" id="asset-quantity" required min="1" placeholder="10">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="asset-price">Price per Unit (₹)</label>
+                            <input type="number" id="asset-price" required min="0" step="0.01" placeholder="150.00">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="asset-category">Category</label>
+                        <select id="asset-category" required>
+                            <option value="">Select Category</option>
+                            <option value="stocks">Stocks</option>
+                            <option value="crypto">Cryptocurrency</option>
+                            <option value="bonds">Bonds</option>
+                            <option value="etf">ETF</option>
+                            <option value="mutual-funds">Mutual Funds</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="add-btn">
+                        <i class="fas fa-plus"></i> Add to Portfolio
+                    </button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
+
+    <!-- Confirmation Modal -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <h3>Confirm Action</h3>
+            <p id="modal-message"></p>
+            <div class="modal-actions">
+                <button id="modal-cancel" class="btn-secondary">Cancel</button>
+                <button id="modal-confirm" class="btn-danger">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
