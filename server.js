@@ -131,113 +131,80 @@ app.get('/api/assets', async (req, res) => {
     }
 });
 
-// Get portfolio items
+// ===================================================================
+// START OF FINAL CORRECTED CODE FOR server.js
+// ===================================================================
+
 app.get('/api/portfolio', async (req, res) => {
+    // --- STEP 1: LOG EVERYTHING WE RECEIVE ---
+    console.log('--- Firing GET /api/portfolio route ---');
+    console.log(`Received request for URL: ${req.originalUrl}`);
+    
+    const { type } = req.query;
+    console.log(`Query parameter 'type' is: ${type}`);
+
     try {
-        const [rows] = await db.execute(`
-            SELECT p.*, a.ticker, a.name, a.current_price, 
-                   (p.quantity * a.current_price) as current_value
-            FROM portfolio_items p 
-            JOIN assets a ON p.asset_id = a.asset_id
-        `);
-        res.json(rows);
+        const baseQuery = `
+            SELECT
+                pi.item_id, a.ticker, a.name, a.asset_type,
+                a.current_price, pi.quantity, pi.avg_buy_price, pi.purchase_date
+            FROM portfolio_items pi
+            JOIN assets a ON pi.asset_id = a.asset_id
+        `;
+
+        let finalQuery;
+        let queryParams = [];
+
+        // --- STEP 2: LOG WHICH LOGIC PATH WE ARE TAKING ---
+        if (type && type.toLowerCase() !== 'all') {
+            // This is the path for "Stocks", "Bonds", etc.
+            console.log('>>> EXECUTING FILTERED LOGIC <<<');
+            finalQuery = `${baseQuery} WHERE a.asset_type = ?`;
+            queryParams.push(type);
+        } else {
+            // This is the path for "All Assets"
+            console.log('>>> EXECUTING "ALL ASSETS" LOGIC <<<');
+            finalQuery = baseQuery;
+        }
+
+        // --- STEP 3: LOG THE EXACT SQL WE ARE ABOUT TO RUN ---
+        console.log('Final SQL Query:', finalQuery);
+        console.log('Query Parameters:', queryParams);
+
+        const [portfolioItems] = await db.execute(finalQuery, queryParams);
+
+        // --- STEP 4: LOG WHAT WE ARE SENDING BACK ---
+        console.log(`Found ${portfolioItems.length} items. Sending to client.`);
+        console.log('-----------------------------------------');
+        
+        res.json(portfolioItems);
+
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('❌ CRITICAL ERROR in GET /api/portfolio:', error.message);
+        console.error('Stack trace:', error.stack);
+        console.log('-----------------------------------------');
+        res.status(500).json({ error: 'An error occurred while fetching the portfolio.' });
     }
 });
 
+// ===================================================================
+// END OF FINAL CORRECTED CODE
+// ===================================================================
+        
+
+
 // Add to portfolio
-// app.post('/api/portfolio', async (req, res) => {
-//     try {
-//         console.log('📝 Add asset request received:', req.body);
-//         const { ticker, quantity, price } = req.body;
-        
-//         if (!ticker || !quantity || !price || quantity <= 0 || price <= 0) {
-//             console.log('❌ Invalid input data:', { ticker, quantity, price });
-//             return res.status(400).json({ error: 'Invalid input: ticker, quantity (>0), and price (>0) are required' });
-//         }
-        
-//         console.log(`🔍 Looking for asset: ${ticker}`);
-//         // Get or create asset
-//         let [asset] = await db.execute('SELECT * FROM assets WHERE ticker = ?', [ticker]);
-        
-//         if (asset.length === 0) {
-//             console.log(`➕ Creating new asset: ${ticker}`);
-            
-//             // Fetch live stock data
-//             const stockData = await getStockPrice(ticker);
-            
-//             if (stockData) {
-//                 console.log(`📈 Using live data: ${stockData.name} - $${stockData.price}`);
-//                 await db.execute(
-//                     'INSERT INTO assets (ticker, name, asset_type, current_price) VALUES (?, ?, ?, ?)',
-//                     [ticker, stockData.name, 'stock', stockData.price]
-//                 );
-//             } else {
-//                 console.log(`⚠️ Live data unavailable, using provided price: $${price}`);
-//                 await db.execute(
-//                     'INSERT INTO assets (ticker, name, asset_type, current_price) VALUES (?, ?, ?, ?)',
-//                     [ticker, ticker, 'stock', price]
-//                 );
-//             }
-            
-//             [asset] = await db.execute('SELECT * FROM assets WHERE ticker = ?', [ticker]);
-//             console.log(`✅ Asset created with ID: ${asset[0].asset_id}`);
-//         } else {
-//             console.log(`✅ Found existing asset with ID: ${asset[0].asset_id}`);
-            
-//             // Update existing asset with latest price
-//             const stockData = await getStockPrice(ticker);
-//             if (stockData) {
-//                 console.log(`🔄 Updating ${ticker} price to $${stockData.price}`);
-//                 await db.execute(
-//                     'UPDATE assets SET current_price = ?, name = ? WHERE ticker = ?',
-//                     [stockData.price, stockData.name, ticker]
-//                 );
-//                 // Refresh asset data
-//                 [asset] = await db.execute('SELECT * FROM assets WHERE ticker = ?', [ticker]);
-//             }
-//         }
-        
-//         const assetId = asset[0].asset_id;
-        
-//         console.log(`📊 Adding to portfolio: ${quantity} shares at $${price}`);
-//         // Add to portfolio
-//         await db.execute(
-//             'INSERT INTO portfolio_items (asset_id, quantity, avg_buy_price, purchase_date) VALUES (?, ?, ?, CURDATE())',
-//             [assetId, quantity, price]
-//         );
-        
-//         console.log(`💰 Recording transaction`);
-//         // Add transaction
-//         await db.execute(
-//             'INSERT INTO transactions (asset_id, transaction_type, quantity, price) VALUES (?, ?, ?, ?)',
-//             [assetId, 'buy', quantity, price]
-//         );
-        
-//         console.log('🎉 Asset added successfully!');
-//         res.json({ message: 'Asset added to portfolio successfully' });
-//     } catch (error) {
-//         console.error('❌ Error adding asset:', error.message);
-//         console.error('Stack trace:', error.stack);
-//         res.status(500).json({ error: error.message });
-//     }
-// });
+// FIX #2: Complete rewrite to correctly handle assetType.
 app.post('/api/portfolio', async (req, res) => {
     try {
         console.log('📝 Add asset request received:', req.body);
-        // MODIFICATION: Added 'assetType' to the destructured request body.
+        // Destructure assetType from the request body
         const { ticker, quantity, price, assetType } = req.body;
         
-        // MODIFICATION: Updated validation to require 'assetType'.
+        // Add assetType to the validation
         if (!ticker || !quantity || !price || !assetType || quantity <= 0 || price <= 0) {
             console.log('❌ Invalid input data:', { ticker, quantity, price, assetType });
             return res.status(400).json({ error: 'Invalid input: ticker, quantity (>0), price (>0), and assetType are required' });
-        }
-
-        // Optional: Add validation for the value of assetType
-        if (assetType !== 'stock' && assetType !== 'bond') {
-             return res.status(400).json({ error: "Invalid assetType: must be 'stock' or 'bond'" });
         }
         
         console.log(`🔍 Looking for asset: ${ticker}`);
@@ -245,51 +212,41 @@ app.post('/api/portfolio', async (req, res) => {
         
         if (asset.length === 0) {
             console.log(`➕ Creating new asset: ${ticker} of type ${assetType}`);
-            
-            // MODIFICATION: Added logic to handle asset creation based on assetType.
-            if (assetType === 'stock') {
+            let assetName = ticker; // Default name is the ticker
+            let currentPrice = price; // Default price is the one provided
+
+            // Only fetch from Yahoo Finance if it's a stock
+            if (assetType.toLowerCase() === 'stock') {
                 const stockData = await getStockPrice(ticker);
                 if (stockData) {
                     console.log(`📈 Using live data for stock: ${stockData.name} - $${stockData.price}`);
-                    await db.execute(
-                        'INSERT INTO assets (ticker, name, asset_type, current_price) VALUES (?, ?, ?, ?)',
-                        [ticker, stockData.name, 'stock', stockData.price]
-                    );
+                    assetName = stockData.name;
+                    currentPrice = stockData.price;
                 } else {
                     console.log(`⚠️ Live data for stock unavailable, using provided price: $${price}`);
-                    await db.execute(
-                        'INSERT INTO assets (ticker, name, asset_type, current_price) VALUES (?, ?, ?, ?)',
-                        [ticker, ticker, 'stock', price]
-                    );
                 }
-            } else if (assetType === 'bond') {
-                // For bonds, we use the provided price and don't fetch live data.
-                console.log(`📝 Creating bond asset, using provided price: $${price}`);
-                await db.execute(
-                    'INSERT INTO assets (ticker, name, asset_type, current_price) VALUES (?, ?, ?, ?)',
-                    [ticker, ticker, 'bond', price] // Using ticker as name for bond by default
-                );
             }
-            
-            [asset] = await db.execute('SELECT * FROM assets WHERE ticker = ?', [ticker]);
+
+            // Use the assetType from the form, not a hardcoded value
+            const [newAsset] = await db.execute(
+                'INSERT INTO assets (ticker, name, asset_type, current_price) VALUES (?, ?, ?, ?)',
+                [ticker, assetName, assetType, currentPrice]
+            );
+            // Get the ID of the newly inserted asset
+            asset = [{ asset_id: newAsset.insertId }];
             console.log(`✅ Asset created with ID: ${asset[0].asset_id}`);
         } else {
+            // Asset already exists
             console.log(`✅ Found existing asset with ID: ${asset[0].asset_id}`);
-            
-            // MODIFICATION: Only update the price automatically for stocks.
-            const existingAssetType = asset[0].asset_type;
-            if (existingAssetType === 'stock') {
+            // Optionally update the price, but only for stocks
+            if (asset[0].asset_type.toLowerCase() === 'stock') {
                 const stockData = await getStockPrice(ticker);
                 if (stockData) {
-                    console.log(`🔄 Updating ${ticker} price to $${stockData.price}`);
                     await db.execute(
                         'UPDATE assets SET current_price = ?, name = ? WHERE ticker = ?',
                         [stockData.price, stockData.name, ticker]
                     );
-                    [asset] = await db.execute('SELECT * FROM assets WHERE ticker = ?', [ticker]);
                 }
-            } else {
-                console.log(`ℹ️ Skipping automatic price update for non-stock asset: ${ticker}`);
             }
         }
         
@@ -308,11 +265,14 @@ app.post('/api/portfolio', async (req, res) => {
         );
         
         console.log('🎉 Asset added successfully!');
-        res.json({ message: 'Asset added to portfolio successfully' });
+        // Send a 201 "Created" status for successful POST requests
+        res.status(201).json({ message: 'Asset added to portfolio successfully' });
+
     } catch (error) {
         console.error('❌ Error adding asset:', error.message);
         console.error('Stack trace:', error.stack);
-        res.status(500).json({ error: error.message });
+        // Ensure you always send a JSON error response
+        res.status(500).json({ error: 'A critical error occurred on the server while adding the asset.' });
     }
 });
 

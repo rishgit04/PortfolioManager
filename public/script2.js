@@ -123,17 +123,9 @@ function showTab(tabName, event = null) {
 }
 
 // Load portfolio data
-// ===================================================================
-// START OF CORRECTED CODE
-// ===================================================================
-
-// Load portfolio data
 async function loadPortfolio() {
     try {
-        // ADDED: A cache-busting parameter to ensure fresh data is always fetched.
-        const cacheBust = new Date().getTime();
-        const response = await fetch(`${API_BASE}/portfolio?_cacheBust=${cacheBust}`);
-        
+        const response = await fetch(`${API_BASE}/portfolio`);
         if (!response.ok) {
             throw new Error('Failed to fetch portfolio');
         }
@@ -150,18 +142,23 @@ async function loadPortfolio() {
 async function loadPortfolioByType(assetType) {
     try {
         console.log(`🔍 Loading portfolio for asset type: ${assetType}`);
-        
-        // ADDED: A cache-busting parameter to ensure fresh data is always fetched.
-        const cacheBust = new Date().getTime();
-        const response = await fetch(`${API_BASE}/portfolio?type=${encodeURIComponent(assetType)}&_cacheBust=${cacheBust}`);
-
+        const response = await fetch(`${API_BASE}/portfolio?type=${encodeURIComponent(assetType)}`);
         if (!response.ok) {
             throw new Error('Failed to fetch portfolio');
         }
         const portfolio = await response.json();
         console.log(`📊 Received ${portfolio.length} items for ${assetType}:`, portfolio);
         
-        const gridId = getGridIdByAssetType(assetType);
+        // Determine which grid to display in based on asset type
+        let gridId;
+        switch(assetType) {
+            case 'stock': gridId = 'stocksGrid'; break;
+            case 'bond': gridId = 'bondsGrid'; break;
+            case 'mutual fund': gridId = 'mutualFundsGrid'; break;
+            case 'ETF': gridId = 'etfsGrid'; break;
+            case 'cash': gridId = 'cashGrid'; break;
+            default: gridId = 'portfolioGrid';
+        }
         
         console.log(`🎯 Displaying ${portfolio.length} items in grid: ${gridId}`);
         displayPortfolioInGrid(portfolio, gridId);
@@ -171,8 +168,6 @@ async function loadPortfolioByType(assetType) {
         document.getElementById(gridId).innerHTML = '<p>Error loading portfolio data</p>';
     }
 }
-
-
 
 // Helper function to get grid ID by asset type
 function getGridIdByAssetType(assetType) {
@@ -371,13 +366,108 @@ function displayTransactions(transactions) {
     }).join('');
 }
 
+// Add asset form handler
+// addAssetForm.addEventListener('submit', async (e) => {
+//     e.preventDefault();
+    
+//     const assetType = document.getElementById('assetType').value;
+//     const ticker = document.getElementById('ticker').value.trim().toUpperCase();
+//     const quantity = parseInt(document.getElementById('quantity').value);
+//     const price = parseFloat(document.getElementById('price').value);
+    
+//     // Validate input data
+//     if (!assetType) {
+//         alert('Please select an asset type.');
+//         return;
+//     }
+    
+//     if (!ticker) {
+//         alert('Please enter a valid ticker symbol.');
+//         return;
+//     }
+    
+//     if (isNaN(quantity) || quantity <= 0) {
+//         alert('Please enter a valid quantity (greater than 0).');
+//         return;
+//     }
+    
+//     if (isNaN(price) || price <= 0) {
+//         alert('Please enter a valid price (greater than 0).');
+//         return;
+//     }
+    
+//     console.log('Adding asset:', { ticker, quantity, price });
+    
+//     try {
+//         const response = await fetch(`${API_BASE}/portfolio`, {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json'
+//             },
+//             body: JSON.stringify({ ticker, quantity, price, assetType })
+//         });
+        
+//         console.log('Server response status:', response.status);
+        
+//         if (response.ok) {
+//             const result = await response.json();
+//             console.log('Success response:', result);
+            
+//             // Clear form
+//             addAssetForm.reset();
+            
+//             // Show success message
+//             alert('✅ Asset added to portfolio successfully!');
+            
+//             // Refresh data for all tabs
+//             await Promise.all([
+//                 loadPortfolio(), // This refreshes "All Assets" tab
+//                 loadSummary(),
+//                 loadTransactions()
+//             ]);
+            
+//             // Only refresh the specific asset type tab that matches the added asset
+//             await refreshAssetTypeTab(assetType);
+            
+//             // Switch to portfolio tab to show the new asset
+//             showTab('portfolio');
+//         } else {
+//             let errorMessage = 'Unknown error occurred';
+//             try {
+//                 const errorData = await response.json();
+//                 errorMessage = errorData.error || errorMessage;
+//             } catch (parseError) {
+//                 console.error('Error parsing error response:', parseError);
+//                 errorMessage = `Server error (${response.status})`;
+//             }
+            
+//             console.error('Server error:', errorMessage);
+//             alert(`❌ Error adding asset: ${errorMessage}`);
+//         }
+//     } catch (error) {
+//         console.error('=== ASSET ADDITION ERROR DEBUG ===');
+//         console.error('Error caught:', error);
+//         console.error('Error type:', error.constructor.name);
+//         console.error('Error message:', error.message);
+//         console.error('Error stack:', error.stack);
+//         console.error('================================');
+        
+//         // More specific error handling based on error type
+//         if (error.name === 'TypeError' && error.message.includes('fetch')) {
+//             alert('❌ Network error: Could not connect to server');
+//         } else if (error.name === 'SyntaxError') {
+//             alert('❌ Error: Server returned invalid response format');
+//         } else if (error.message.includes('JSON')) {
+//             alert('❌ Error: Could not parse server response');
+//         } else {
+//             alert(`❌ Error: ${error.message}`);
+//         }
+//     }
+// });
+// Ensure this is defined, likely at a higher scope in your script
+// const API_BASE = 'http://your-api-url.com/api'; // Replace with your actual API base URL
 
-// ===================================================================
-// START OF MODIFIED CODE BLOCK
-// ===================================================================
-// ===================================================================
-// START OF MODIFIED CODE BLOCK
-// ===================================================================
+// const addAssetForm = document.getElementById('addAssetForm');
 
 addAssetForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -387,21 +477,24 @@ addAssetForm.addEventListener('submit', async (e) => {
     const quantity = parseInt(document.getElementById('quantity').value);
     const price = parseFloat(document.getElementById('price').value);
 
-    // --- Validation (no changes here) ---
+    // Validate input data
     if (!assetType) {
-        showNotification('Please select an asset type.', 'error');
+        alert('Please select an asset type.');
         return;
     }
+
     if (!ticker) {
-        showNotification('Please enter a valid ticker symbol.', 'error');
+        alert('Please enter a valid ticker symbol.');
         return;
     }
+
     if (isNaN(quantity) || quantity <= 0) {
-        showNotification('Please enter a valid quantity (greater than 0).', 'error');
+        alert('Please enter a valid quantity (greater than 0).');
         return;
     }
+
     if (isNaN(price) || price <= 0) {
-        showNotification('Please enter a valid price (greater than 0).', 'error');
+        alert('Please enter a valid price (greater than 0).');
         return;
     }
 
@@ -413,63 +506,58 @@ addAssetForm.addEventListener('submit', async (e) => {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ ticker, quantity, price, assetType })
+            body: JSON.stringify({ ticker, quantity, price, assetType }) // Correctly sending assetType
         });
 
-        // --- NEW: Robust Error Handling ---
-        if (!response.ok) {
-            // Read the response body as text, as it may not be JSON
-            const responseText = await response.text();
-            let errorMessage;
+        console.log('Server response status:', response.status);
 
-            // Try to parse the text as JSON. If it fails, we use the raw text.
+        if (response.ok) {
+            const result = await response.json();
+            console.log('Success response:', result);
+
+            // Clear form
+            addAssetForm.reset();
+
+            // Show success message
+            alert('✅ Asset added to portfolio successfully!');
+
+            // Refresh data for all relevant views
+            await Promise.all([
+                loadPortfolio(), // This refreshes the "All Assets" tab
+                loadSummary(),
+                loadTransactions()
+            ]);
+
+            // Specifically refresh the content of the tab for the asset type added.
+            await refreshAssetTypeTab(assetType); // This will refresh the "Bonds" tab if a bond was added
+
+            // Switch to the main portfolio view to show the newly added asset.
+            showTab('portfolio');
+        } else {
+            let errorMessage = 'An unknown error occurred.';
             try {
-                const errorData = JSON.parse(responseText);
-                errorMessage = errorData.error || `Server responded with status ${response.status}`;
+                const errorData = await response.json();
+                errorMessage = errorData.error || errorMessage;
             } catch (parseError) {
-                // This catches the "Unexpected token" error! The response was not JSON.
-                console.error("Server returned a non-JSON error response:", responseText);
-                errorMessage = `Server error (${response.status}). Check the browser console for details.`;
+                console.error('Error parsing error response:', parseError);
+                errorMessage = `Server error (${response.status})`;
             }
-            // Throw an error to be caught by the main catch block
-            throw new Error(errorMessage);
+
+            console.error('Server error:', errorMessage);
+            alert(`❌ Error adding asset: ${errorMessage}`);
         }
-
-        // --- Success Path (no changes here) ---
-        const result = await response.json();
-        console.log('Success response:', result);
-
-        addAssetForm.reset();
-        showNotification('Asset added to portfolio successfully!', 'success');
-
-        await Promise.all([
-            loadSummary(),
-            loadTransactions()
-        ]);
-        
-        // Determine the target tab
-        let targetTabName;
-        switch (assetType.toLowerCase()) {
-            case 'stock': targetTabName = 'stocks'; break;
-            case 'bond': targetTabName = 'bonds'; break;
-            case 'mutual fund': targetTabName = 'mutual-funds'; break;
-            case 'etf': targetTabName = 'etfs'; break;
-            case 'cash': targetTabName = 'cash'; break;
-            default: targetTabName = 'portfolio';
-        }
-        
-        showTab(targetTabName);
-
     } catch (error) {
-        // This single catch block now handles network errors AND server errors gracefully
-        console.error('❌ Error adding asset:', error);
-        showNotification(error.message, 'error');
+        console.error('=== ASSET ADDITION ERROR DEBUG ===');
+        console.error('Error caught:', error);
+        if (error instanceof TypeError && error.message.includes('fetch')) {
+            alert('❌ Network error: Could not connect to the server. Please check your connection.');
+        } else {
+            alert(`❌ An unexpected error occurred: ${error.message}`);
+        }
     }
 });
 
-// ===================================================================
-// END OF MODIFIED CODE BLOCK
-// ===================================================================
+
 
 
 
@@ -698,6 +786,3 @@ function showNotification(message, type = 'info') {
         setTimeout(() => notification.remove(), 300);
     }, 3000);
 }
-
-
-

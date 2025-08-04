@@ -52,40 +52,61 @@
             </div>
         </header>
 
-        <nav class="tabs">
-            <button class="tab-btn active" onclick="showTab('portfolio')">
-                <i class="fas fa-chart-pie"></i>
-                <span>All Assets</span>
-            </button>
-            <button class="tab-btn" onclick="showTab('stocks')">
-                <i class="fas fa-chart-line"></i>
-                <span>Stocks</span>
-            </button>
-            <button class="tab-btn" onclick="showTab('bonds')">
-                <i class="fas fa-university"></i>
-                <span>Bonds</span>
-            </button>
-            <button class="tab-btn" onclick="showTab('mutual-funds')">
-                <i class="fas fa-layer-group"></i>
-                <span>Mutual Funds</span>
-            </button>
-            <button class="tab-btn" onclick="showTab('etfs')">
-                <i class="fas fa-exchange-alt"></i>
-                <span>ETFs</span>
-            </button>
-            <button class="tab-btn" onclick="showTab('cash')">
-                <i class="fas fa-dollar-sign"></i>
-                <span>Cash</span>
-            </button>
-            <button class="tab-btn" onclick="showTab('add')">
-                <i class="fas fa-plus-circle"></i>
-                <span>Add Asset</span>
-            </button>
-            <button class="tab-btn" onclick="showTab('transactions')">
-                <i class="fas fa-history"></i>
-                <span>Transactions</span>
-            </button>
-        </nav>
+        <!-- =================================================================== -->
+<!-- START OF CORRECTED CODE FOR index.html                             -->
+<!-- =================================================================== -->
+
+<nav class="tabs">
+    <!-- This button correctly calls showTab with 'portfolio' -->
+    <button class="tab-btn active" onclick="showTab('portfolio', event)">
+        <i class="fas fa-chart-pie"></i>
+        <span>All Assets</span>
+    </button>
+    
+    <!-- This button MUST call showTab with 'stocks' -->
+    <button class="tab-btn" onclick="showTab('stocks', event)">
+        <i class="fas fa-chart-line"></i>
+        <span>Stocks</span>
+    </button>
+    
+    <!-- This button MUST call showTab with 'bonds' -->
+    <button class="tab-btn" onclick="showTab('bonds', event)">
+        <i class="fas fa-university"></i>
+        <span>Bonds</span>
+    </button>
+    
+    <!-- This button MUST call showTab with 'mutual-funds' -->
+    <button class="tab-btn" onclick="showTab('mutual-funds', event)">
+        <i class="fas fa-layer-group"></i>
+        <span>Mutual Funds</span>
+    </button>
+    
+    <!-- This button MUST call showTab with 'etfs' -->
+    <button class="tab-btn" onclick="showTab('etfs', event)">
+        <i class="fas fa-exchange-alt"></i>
+        <span>ETFs</span>
+    </button>
+    
+    <!-- This button MUST call showTab with 'cash' -->
+    <button class="tab-btn" onclick="showTab('cash', event)">
+        <i class="fas fa-dollar-sign"></i>
+        <span>Cash</span>
+    </button>
+    
+    <!-- These buttons are also correct -->
+    <button class="tab-btn" onclick="showTab('add', event)">
+        <i class="fas fa-plus-circle"></i>
+        <span>Add Asset</span>
+    </button>
+    <button class="tab-btn" onclick="showTab('transactions', event)">
+        <i class="fas fa-history"></i>
+        <span>Transactions</span>
+    </button>
+</nav>
+
+<!-- =================================================================== -->
+<!-- END OF CORRECTED CODE                                                -->
+<!-- =================================================================== -->
 
         <!-- Portfolio Tab -->
         <div id="portfolio" class="tab-content active">
