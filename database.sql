@@ -40,6 +40,11 @@ CREATE TABLE performance_snapshots (
     cash_balance DECIMAL(12,2) DEFAULT 0.00
 );
 
+-- Clear existing data (uncomment these lines if you want to reset all data)
+-- DELETE FROM portfolio_items;
+-- DELETE FROM transactions;
+-- DELETE FROM assets;
+
 -- Insert some sample data
 INSERT INTO assets (ticker, name, asset_type, current_price) VALUES
 ('AAPL', 'Apple Inc.', 'stock', 150.00),
