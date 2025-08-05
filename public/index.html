@@ -3,25 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portified</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Portified - Portfolio Dashboard</title>
+    <link rel="stylesheet" href="dashboard-style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
+    <div class="dashboard-container">
+        <!-- Header Section -->
+        <header class="dashboard-header">
             <div class="header-content">
                 <div class="logo-section">
                     <i class="fas fa-chart-line"></i>
-                    <h1>PORTIFIED : Portfolio Simplified</h1>
+                    <h1>PORTIFIED : Portfolio Dashboard</h1>
                 </div>
-                <div class="theme-toggle">
+                <div class="header-actions">
+                    <button id="refreshPricesBtn" class="action-btn refresh-btn">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Refresh Prices</span>
+                    </button>
                     <button id="themeToggle" class="theme-btn">
                         <i class="fas fa-moon"></i>
                     </button>
                 </div>
             </div>
-            <div class="summary" id="summary">
+        </header>
+
+        <!-- Summary Cards -->
+        <section class="summary-section">
+            <div class="summary-grid">
                 <div class="summary-card">
                     <div class="summary-icon">
                         <i class="fas fa-dollar-sign"></i>
@@ -36,7 +46,7 @@
                         <i class="fas fa-briefcase"></i>
                     </div>
                     <div class="summary-info">
-                        <span class="label">Assets</span>
+                        <span class="label">Total Assets</span>
                         <span class="value" id="totalAssets">0</span>
                     </div>
                 </div>
@@ -49,217 +59,147 @@
                         <span class="value" id="totalTransactions">0</span>
                     </div>
                 </div>
-            </div>
-        </header>
-
-        <nav class="tabs">
-            <button class="tab-btn active" onclick="showTab('portfolio', event)">
-                <i class="fas fa-chart-pie"></i>
-                <span>All Assets</span>
-            </button>
-            <button class="tab-btn" onclick="showTab('stocks', event)">
-                <i class="fas fa-chart-line"></i>
-                <span>Stocks</span>
-            </button>
-            <button class="tab-btn" onclick="showTab('bonds', event)">
-                <i class="fas fa-university"></i>
-                <span>Bonds</span>
-            </button>
-            <button class="tab-btn" onclick="showTab('mutual-funds', event)">
-                <i class="fas fa-layer-group"></i>
-                <span>Mutual Funds</span>
-            </button>
-            <button class="tab-btn" onclick="showTab('etfs', event)">
-                <i class="fas fa-exchange-alt"></i>
-                <span>ETFs</span>
-            </button>
-            <button class="tab-btn" onclick="showTab('cash', event)">
-                <i class="fas fa-dollar-sign"></i>
-                <span>Cash</span>
-            </button>
-            <button class="tab-btn" onclick="showTab('add', event)">
-                <i class="fas fa-plus-circle"></i>
-                <span>Add Asset</span>
-            </button>
-            <button class="tab-btn" onclick="showTab('transactions', event)">
-                <i class="fas fa-history"></i>
-                <span>Transactions</span>
-            </button>
-        </nav>
-
-        <!-- Portfolio Tab -->
-        <div id="portfolio" class="tab-content active">
-            <div class="portfolio-header">
-                <h2><i class="fas fa-wallet"></i> Your Portfolio</h2>
-                <div class="portfolio-actions">
-                    <button id="refreshPricesBtn" class="action-btn refresh-btn">
-                        <i class="fas fa-sync-alt"></i>
-                        <span>Refresh Prices</span>
-                    </button>
+                <div class="summary-card">
+                    <div class="summary-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="summary-info">
+                        <span class="label">Cash Balance</span>
+                        <span class="value" id="settlementAccountBalance">$1000.00</span>
+                    </div>
                 </div>
             </div>
-            <!-- Add settlement account balance display -->
-            <div class="settlement-account">
-                <h3><i class="fas fa-dollar-sign"></i> Settlement Account</h3>
-                <p>Balance: <span id="settlementAccountBalance">$1000.00</span></p>
-            </div>
-            <div id="portfolioGrid" class="portfolio-grid">
-                <!-- Portfolio items will be loaded here -->
-            </div>
-        </div>
+        </section>
 
-        <!-- Stocks Tab -->
-        <div id="stocks" class="tab-content">
-            <div class="portfolio-header">
-                <h2><i class="fas fa-chart-line"></i> Stocks</h2>
-                <div class="portfolio-actions">
-                    <button id="refreshPricesBtn" class="action-btn refresh-btn">
-                        <i class="fas fa-sync-alt"></i>
-                        <span>Refresh Prices</span>
-                    </button>
+        <!-- Main Content Grid -->
+        <div class="main-content">
+            <!-- Performance Chart -->
+            <section class="chart-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-chart-area"></i> Portfolio Performance</h2>
                 </div>
-            </div>
-            <div id="stocksGrid" class="portfolio-grid">
-                <!-- Stock assets will be loaded here -->
-            </div>
-        </div>
-
-        <!-- Bonds Tab -->
-        <div id="bonds" class="tab-content">
-            <div class="portfolio-header">
-                <h2><i class="fas fa-university"></i> Bonds</h2>
-                <div class="portfolio-actions">
-                    <button id="refreshPricesBtn" class="action-btn refresh-btn">
-                        <i class="fas fa-sync-alt"></i>
-                        <span>Refresh Prices</span>
-                    </button>
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
                 </div>
-            </div>
-            <div id="bondsGrid" class="portfolio-grid">
-                <!-- Bond assets will be loaded here -->
-            </div>
-        </div>
+            </section>
 
-        <!-- Mutual Funds Tab -->
-        <div id="mutual-funds" class="tab-content">
-            <div class="portfolio-header">
-                <h2><i class="fas fa-layer-group"></i> Mutual Funds</h2>
-                <div class="portfolio-actions">
-                    <button id="refreshPricesBtn" class="action-btn refresh-btn">
-                        <i class="fas fa-sync-alt"></i>
-                        <span>Refresh Prices</span>
-                    </button>
-                </div>
-            </div>
-            <div id="mutualFundsGrid" class="portfolio-grid">
-                <!-- Mutual fund assets will be loaded here -->
-            </div>
-        </div>
-
-        <!-- ETFs Tab -->
-        <div id="etfs" class="tab-content">
-            <div class="portfolio-header">
-                <h2><i class="fas fa-exchange-alt"></i> ETFs</h2>
-                <div class="portfolio-actions">
-                    <button id="refreshPricesBtn" class="action-btn refresh-btn">
-                        <i class="fas fa-sync-alt"></i>
-                        <span>Refresh Prices</span>
-                    </button>
-                </div>
-            </div>
-            <div id="etfsGrid" class="portfolio-grid">
-                <!-- ETF assets will be loaded here -->
-            </div>
-        </div>
-
-        <!-- Cash Tab -->
-        <div id="cash" class="tab-content">
-            <div class="portfolio-header">
-                <h2><i class="fas fa-dollar-sign"></i> Cash</h2>
-                <div class="portfolio-actions">
-                    <button id="refreshPricesBtn" class="action-btn refresh-btn">
-                        <i class="fas fa-sync-alt"></i>
-                        <span>Refresh Prices</span>
-                    </button>
-                </div>
-            </div>
-            <div id="cashGrid" class="portfolio-grid">
-                <!-- Cash assets will be loaded here -->
-            </div>
-        </div>
-
-        <!-- Settlement Account Tab -->
-        <div id="settlementAccountTab" class="tab-content">
-            <h2>Settlement Account</h2>
-            <p>Balance: <span id="settlementAccountBalance">$1000.00</span></p>
-        </div>
-
-        <!-- Add Asset Tab -->
-        <div id="add" class="tab-content">
-            <div class="form-container">
-                <h2><i class="fas fa-plus-circle"></i> Add New Asset</h2>
-                <form id="addAssetForm" class="form">
-                    <div class="form-group">
-                        <label for="assetType">
-                            <i class="fas fa-layer-group"></i>
-                            Asset Type
-                        </label>
-                        <select id="assetType" required>
-                            <option value="">Select Asset Type</option>
-                            <option value="stock">Stock</option>
-                            <option value="bond">Bond</option>
-                            <option value="mutual fund">Mutual Fund</option>
-                            <option value="ETF">ETF</option>
-                            <option value="cash">Cash</option>
+            <!-- Portfolio Table -->
+            <section class="portfolio-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-wallet"></i> Portfolio Holdings</h2>
+                    <div class="section-actions">
+                        <select id="assetTypeFilter" class="filter-select">
+                            <option value="all">All Assets</option>
+                            <option value="stock">Stocks</option>
+                            <option value="bond">Bonds</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label for="ticker">
-                            <i class="fas fa-tag"></i>
-                            Ticker Symbol
-                        </label>
-                        <input type="text" id="ticker" required placeholder="e.g., AAPL, GOOGL, MSFT">
-                    </div>
-                    <div class="form-group">
-                        <label for="quantity">
-                            <i class="fas fa-sort-numeric-up"></i>
-                            Quantity
-                        </label>
-                        <input type="number" id="quantity" required min="1" placeholder="Number of shares">
-                    </div>
-                    <div class="form-group">
-                        <label for="price">
-                            <i class="fas fa-dollar-sign"></i>
-                            Purchase Price
-                        </label>
-                        <input type="number" id="price" required min="0" step="0.01" placeholder="Price per share">
-                    </div>
-                    <button type="submit" class="submit-btn">
-                        <i class="fas fa-plus"></i>
-                        Add to Portfolio
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Transactions Tab -->
-        <div id="transactions" class="tab-content">
-            <div class="transactions-header">
-                <h2><i class="fas fa-history"></i> Transaction History</h2>
-                <div class="transaction-filters">
-                    <select id="transactionFilter" class="filter-select">
-                        <option value="all">All Transactions</option>
-                        <option value="buy">Buy Orders</option>
-                        <option value="sell">Sell Orders</option>
-                    </select>
                 </div>
-            </div>
-            <div class="transactions-list" id="transactionsList">
-                <!-- Transactions will be loaded here -->
-            </div>
+                <div class="table-container">
+                    <table id="portfolioTable" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Asset</th>
+                                <th>Type</th>
+                                <th>Quantity</th>
+                                <th>Purchase Price</th>
+                                <th>Current Price</th>
+                                <th>Total Value</th>
+                                <th>Gain/Loss</th>
+                                <th>Gain/Loss %</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="portfolioTableBody">
+                            <!-- Portfolio data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Add Asset Form -->
+            <section class="add-asset-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-plus-circle"></i> Add New Asset</h2>
+                </div>
+                <form id="addAssetForm" class="add-asset-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="assetType">
+                                <i class="fas fa-layer-group"></i>
+                                Asset Type
+                            </label>
+                            <select id="assetType" required>
+                                <option value="">Select Type</option>
+                                <option value="stock">Stock</option>
+                                <option value="bond">Bond</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="ticker">
+                                <i class="fas fa-tag"></i>
+                                Ticker Symbol
+                            </label>
+                            <input type="text" id="ticker" required placeholder="e.g., AAPL">
+                        </div>
+                        <div class="form-group">
+                            <label for="quantity">
+                                <i class="fas fa-sort-numeric-up"></i>
+                                Quantity
+                            </label>
+                            <input type="number" id="quantity" required min="1" placeholder="Shares">
+                        </div>
+                        <div class="form-group">
+                            <label for="price">
+                                <i class="fas fa-dollar-sign"></i>
+                                Purchase Price
+                            </label>
+                            <input type="number" id="price" required min="0" step="0.01" placeholder="$0.00">
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="submit-btn">
+                                <i class="fas fa-plus"></i>
+                                Add Asset
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Transaction History Table -->
+            <section class="transactions-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-history"></i> Recent Transactions</h2>
+                    <div class="section-actions">
+                        <select id="transactionFilter" class="filter-select">
+                            <option value="all">All Transactions</option>
+                            <option value="buy">Buy Orders</option>
+                            <option value="sell">Sell Orders</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="transactionsTable" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Asset</th>
+                                <th>Type</th>
+                                <th>Action</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Total Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTableBody">
+                            <!-- Transaction data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="dashboard-script.js"></script>
 </body>
 </html>

@@ -91,8 +91,48 @@ process.on('unhandledRejection', (reason, promise) => {
     console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
-// Initialize Settlement Account balance
-let settlementAccountBalance = 1000;
+// Initialize Settlement Account balance from database
+let settlementAccountBalance = 1000; // Default fallback
+
+// Load settlement account balance from database
+async function loadSettlementAccountBalance() {
+    try {
+        const [rows] = await db.execute('SELECT balance FROM settlement_account WHERE id = 1');
+        if (rows.length > 0) {
+            settlementAccountBalance = parseFloat(rows[0].balance);
+            console.log(`✅ Loaded settlement account balance: $${settlementAccountBalance}`);
+        } else {
+            // Create initial settlement account record
+            await db.execute('INSERT INTO settlement_account (id, balance) VALUES (1, 1000) ON DUPLICATE KEY UPDATE balance = balance');
+            settlementAccountBalance = 1000;
+            console.log('✅ Created initial settlement account with $1000');
+        }
+    } catch (error) {
+        console.log('⚠️ Settlement account table may not exist, using default balance');
+        // Try to create the table if it doesn't exist
+        try {
+            await db.execute(`
+                CREATE TABLE IF NOT EXISTS settlement_account (
+                    id INT PRIMARY KEY,
+                    balance DECIMAL(10,2) DEFAULT 1000.00
+                )
+            `);
+            await db.execute('INSERT INTO settlement_account (id, balance) VALUES (1, 1000) ON DUPLICATE KEY UPDATE balance = balance');
+            console.log('✅ Created settlement_account table and initialized with $1000');
+        } catch (createError) {
+            console.error('❌ Could not create settlement_account table:', createError.message);
+        }
+    }
+}
+
+// Save settlement account balance to database
+async function saveSettlementAccountBalance() {
+    try {
+        await db.execute('UPDATE settlement_account SET balance = ? WHERE id = 1', [settlementAccountBalance]);
+    } catch (error) {
+        console.error('❌ Error saving settlement account balance:', error.message);
+    }
+}
 
 // API to get Settlement Account balance
 app.get('/api/settlement-account', (req, res) => {
@@ -100,19 +140,23 @@ app.get('/api/settlement-account', (req, res) => {
 });
 
 // Adjust Settlement Account balance on transactions
-function adjustSettlementAccount(transactionType, amount) {
+async function adjustSettlementAccount(transactionType, amount) {
     if (transactionType === 'buy') {
         settlementAccountBalance -= amount;
     } else if (transactionType === 'sell') {
         settlementAccountBalance += amount;
     }
+    await saveSettlementAccountBalance();
 }
 
 // Start server without automatic price updates to prevent crashes
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`✅ Server running on port ${PORT}`);
     console.log('🌐 Portfolio Manager Pro is ready!');
     console.log('📊 Stock prices will be updated manually or on demand');
+    
+    // Load settlement account balance from database
+    await loadSettlementAccountBalance();
     
     // Optional: Set up periodic updates after server is stable
     // Uncomment the lines below once the server is working properly
@@ -161,10 +205,17 @@ app.get('/api/portfolio', async (req, res) => {
     console.log(`Query parameter 'type' is: ${type}`);
 
     try {
+        // Simple query since each asset is now unique in portfolio_items
         const baseQuery = `
             SELECT
-                pi.item_id, a.ticker, a.name, a.asset_type,
-                a.current_price, pi.quantity, pi.avg_buy_price, pi.purchase_date
+                pi.item_id,
+                a.ticker, 
+                a.name, 
+                a.asset_type,
+                a.current_price, 
+                pi.quantity,
+                pi.avg_buy_price,
+                pi.purchase_date
             FROM portfolio_items pi
             JOIN assets a ON pi.asset_id = a.asset_id
         `;
@@ -249,6 +300,10 @@ app.post('/api/portfolio', async (req, res) => {
                 'INSERT INTO assets (ticker, name, asset_type, current_price) VALUES (?, ?, ?, ?)',
                 [ticker, assetName, assetType, currentPrice]
             );
+            // const [portfolio_holding] = await db.execute(
+            //     'INSERT INTO portfolio_items (asset_id, quantity, avg_buy_price, purchase_date) VALUES (?, ?, ?, ?)',
+            //     [newAsset.insertId,quantity, avgBuyPrice, purchaseDate]
+            // );
             // Get the ID of the newly inserted asset
             asset = [{ asset_id: newAsset.insertId }];
             console.log(`✅ Asset created with ID: ${asset[0].asset_id}`);
@@ -271,11 +326,38 @@ app.post('/api/portfolio', async (req, res) => {
         
         console.log(`📊 Adding to portfolio: ${quantity} units at $${price}`);
         const totalCost = quantity * price;
-        adjustSettlementAccount('buy', totalCost); // Deduct from balance
-        await db.execute(
-            'INSERT INTO portfolio_items (asset_id, quantity, avg_buy_price, purchase_date) VALUES (?, ?, ?, CURDATE())',
-            [assetId, quantity, price]
+        await adjustSettlementAccount('buy', totalCost); // Deduct from balance
+        
+        // Check if this asset already exists in portfolio_items
+        const [existingPortfolioItem] = await db.execute(
+            'SELECT * FROM portfolio_items WHERE asset_id = ?',
+            [assetId]
         );
+        
+        if (existingPortfolioItem.length > 0) {
+            // Asset exists - update quantity and recalculate average price
+            const existing = existingPortfolioItem[0];
+            const existingQuantity = existing.quantity;
+            const existingAvgPrice = existing.avg_buy_price;
+            
+            const newTotalQuantity = existingQuantity + quantity;
+            const newAvgPrice = ((existingQuantity * existingAvgPrice) + (quantity * price)) / newTotalQuantity;
+            
+            console.log(`🔄 Updating existing portfolio item: ${existingQuantity} + ${quantity} = ${newTotalQuantity} units`);
+            console.log(`💰 New average price: $${newAvgPrice.toFixed(2)}`);
+            
+            await db.execute(
+                'UPDATE portfolio_items SET quantity = ?, avg_buy_price = ? WHERE asset_id = ?',
+                [newTotalQuantity, newAvgPrice, assetId]
+            );
+        } else {
+            // Asset doesn't exist - insert new portfolio item
+            console.log(`➕ Creating new portfolio item`);
+            await db.execute(
+                'INSERT INTO portfolio_items (asset_id, quantity, avg_buy_price, purchase_date) VALUES (?, ?, ?, CURDATE())',
+                [assetId, quantity, price]
+            );
+        }
         
         console.log(`💰 Recording transaction`);
         await db.execute(
@@ -323,7 +405,7 @@ app.post('/api/portfolio/:itemId/sell', async (req, res) => {
         
         // Record the sell transaction
         const totalGain = quantity * price;
-        adjustSettlementAccount('sell', totalGain); // Add to balance
+        await adjustSettlementAccount('sell', totalGain); // Add to balance
         await db.execute(
             'INSERT INTO transactions (asset_id, transaction_type, quantity, price) VALUES (?, ?, ?, ?)',
             [item.asset_id, 'sell', quantity, price]
