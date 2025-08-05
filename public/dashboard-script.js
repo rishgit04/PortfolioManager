@@ -152,19 +152,24 @@ async function loadTransactionData() {
 // Load Summary Data
 async function loadSummaryData() {
     try {
-        const response = await fetch(`${API_BASE}/portfolio/summary`);
-        if (response.ok) {
-            const summary = await response.json();
-            updateSummaryCards(summary);
-        } else {
-            throw new Error('Failed to load summary data');
+        const [portfolioResponse, transactionsResponse] = await Promise.all([
+            fetch(`${API_BASE}/portfolio/summary`),
+            fetch(`${API_BASE}/transactions`)
+        ]);
+        
+        const summary = await portfolioResponse.json();
+        const transactions = await transactionsResponse.json();
+        
+        totalValueEl.textContent = `$${parseFloat(summary.total_value || 0).toFixed(2)}`;
+        totalAssetsEl.textContent = summary.total_assets || 0;
+        if (totalTransactionsEl) {
+            totalTransactionsEl.textContent = transactions.length || 0;
         }
     } catch (error) {
         console.error('Error loading summary:', error);
-        // Calculate summary from portfolio data if API fails
-        calculateSummaryFromPortfolio();
     }
 }
+
 
 // Update Summary Cards
 function updateSummaryCards(summary) {
