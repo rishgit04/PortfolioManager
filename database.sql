@@ -41,9 +41,9 @@ CREATE TABLE performance_snapshots (
 );
 
 -- Clear existing data (uncomment these lines if you want to reset all data)
--- DELETE FROM portfolio_items;
--- DELETE FROM transactions;
--- DELETE FROM assets;
+DELETE FROM portfolio_items;
+DELETE FROM transactions;
+DELETE FROM assets;
 
 -- Insert some sample data
 INSERT INTO assets (ticker, name, asset_type, current_price) VALUES
