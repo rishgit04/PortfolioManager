@@ -91,6 +91,23 @@ process.on('unhandledRejection', (reason, promise) => {
     console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
+// Initialize Settlement Account balance
+let settlementAccountBalance = 1000;
+
+// API to get Settlement Account balance
+app.get('/api/settlement-account', (req, res) => {
+    res.json({ balance: settlementAccountBalance });
+});
+
+// Adjust Settlement Account balance on transactions
+function adjustSettlementAccount(transactionType, amount) {
+    if (transactionType === 'buy') {
+        settlementAccountBalance -= amount;
+    } else if (transactionType === 'sell') {
+        settlementAccountBalance += amount;
+    }
+}
+
 // Start server without automatic price updates to prevent crashes
 app.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}`);
@@ -253,6 +270,8 @@ app.post('/api/portfolio', async (req, res) => {
         const assetId = asset[0].asset_id;
         
         console.log(`📊 Adding to portfolio: ${quantity} units at $${price}`);
+        const totalCost = quantity * price;
+        adjustSettlementAccount('buy', totalCost); // Deduct from balance
         await db.execute(
             'INSERT INTO portfolio_items (asset_id, quantity, avg_buy_price, purchase_date) VALUES (?, ?, ?, CURDATE())',
             [assetId, quantity, price]
@@ -303,6 +322,8 @@ app.post('/api/portfolio/:itemId/sell', async (req, res) => {
         }
         
         // Record the sell transaction
+        const totalGain = quantity * price;
+        adjustSettlementAccount('sell', totalGain); // Add to balance
         await db.execute(
             'INSERT INTO transactions (asset_id, transaction_type, quantity, price) VALUES (?, ?, ?, ?)',
             [item.asset_id, 'sell', quantity, price]

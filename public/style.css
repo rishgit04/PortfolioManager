@@ -615,6 +615,27 @@ header {
     font-size: 0.85rem;
 }
 
+/* Settlement Account Section */
+.settlement-account {
+    margin: 20px 0;
+    padding: 15px;
+    background: var(--bg-card);
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.settlement-account h3 {
+    margin: 0 0 10px;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+}
+
+.settlement-account p {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
 /* Utility Classes */
 .loading {
     text-align: center;

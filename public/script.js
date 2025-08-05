@@ -16,12 +16,34 @@ const transactionFilter = document.getElementById('transactionFilter');
 let currentTheme = localStorage.getItem('theme') || 'dark';
 document.documentElement.setAttribute('data-theme', currentTheme);
 
+// Initialize Settlement Account balance
+let settlementAccountBalance = 1000;
+
+// Update Settlement Account balance display
+function updateSettlementAccountDisplay() {
+    const settlementAccountEl = document.getElementById('settlementAccountBalance');
+    if (settlementAccountEl) {
+        settlementAccountEl.textContent = `$${settlementAccountBalance.toFixed(2)}`;
+    }
+}
+
+// Adjust Settlement Account balance after transactions
+function adjustSettlementAccount(transactionType, amount) {
+    if (transactionType === 'buy') {
+        settlementAccountBalance -= amount;
+    } else if (transactionType === 'sell') {
+        settlementAccountBalance += amount;
+    }
+    updateSettlementAccountDisplay();
+}
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
     initializeTheme();
     loadPortfolio();
     loadTransactions();
     loadSummary();
+    updateSettlementAccountDisplay();
     
     // Event listeners
     if (refreshPricesBtn) {
@@ -86,7 +108,7 @@ function showTab(tabName, event = null) {
             'bonds': 2,
             'mutual-funds': 3,
             'etfs': 4,
-            'cash': 5,
+            'settlement-account': 5, // Renamed from 'cash'
             'add': 6,
             'transactions': 7
         };
@@ -101,6 +123,7 @@ function showTab(tabName, event = null) {
     if (tabName === 'portfolio') {
         console.log('📊 Loading ALL assets for portfolio tab');
         loadPortfolio();
+        updateSettlementAccountDisplay(); // Ensure settlement account balance is updated
     } else if (tabName === 'stocks') {
         console.log('📊 Loading STOCK assets only');
         loadPortfolioByType('stock');
@@ -113,9 +136,9 @@ function showTab(tabName, event = null) {
     } else if (tabName === 'etfs') {
         console.log('📊 Loading ETF assets only');
         loadPortfolioByType('ETF');
-    } else if (tabName === 'cash') {
-        console.log('📊 Loading CASH assets only');
-        loadPortfolioByType('cash');
+    } else if (tabName === 'settlement-account') {
+        console.log('📊 Displaying Settlement Account balance');
+        updateSettlementAccountDisplay();
     } else if (tabName === 'transactions') {
         console.log('📊 Loading transactions');
         loadTransactions();
@@ -123,14 +146,8 @@ function showTab(tabName, event = null) {
 }
 
 // Load portfolio data
-// ===================================================================
-// START OF CORRECTED CODE
-// ===================================================================
-
-// Load portfolio data
 async function loadPortfolio() {
     try {
-        // ADDED: A cache-busting parameter to ensure fresh data is always fetched.
         const cacheBust = new Date().getTime();
         const response = await fetch(`${API_BASE}/portfolio?_cacheBust=${cacheBust}`);
         
@@ -151,7 +168,6 @@ async function loadPortfolioByType(assetType) {
     try {
         console.log(`🔍 Loading portfolio for asset type: ${assetType}`);
         
-        // ADDED: A cache-busting parameter to ensure fresh data is always fetched.
         const cacheBust = new Date().getTime();
         const response = await fetch(`${API_BASE}/portfolio?type=${encodeURIComponent(assetType)}&_cacheBust=${cacheBust}`);
 
@@ -171,8 +187,6 @@ async function loadPortfolioByType(assetType) {
         document.getElementById(gridId).innerHTML = '<p>Error loading portfolio data</p>';
     }
 }
-
-
 
 // Helper function to get grid ID by asset type
 function getGridIdByAssetType(assetType) {
@@ -198,13 +212,11 @@ async function refreshAssetTypeTab(assetType) {
         const gridId = getGridIdByAssetType(assetType);
         const grid = document.getElementById(gridId);
         
-        // Only update if the grid exists (tab is rendered)
         if (grid) {
             displayPortfolioInGrid(portfolio, gridId);
         }
     } catch (error) {
         console.error(`❌ Error refreshing ${assetType} tab:`, error);
-        // Don't show error to user as this is background refresh
     }
 }
 
@@ -316,7 +328,6 @@ async function loadTransactions(filter = 'all') {
         console.error('Error stack:', error.stack);
         console.error('========================');
         
-        // More specific error handling
         if (error.name === 'TypeError' && error.message.includes('fetch')) {
             showNotification('Network error: Could not connect to server', 'error');
         } else if (error.name === 'SyntaxError') {
@@ -371,14 +382,6 @@ function displayTransactions(transactions) {
     }).join('');
 }
 
-
-// ===================================================================
-// START OF MODIFIED CODE BLOCK
-// ===================================================================
-// ===================================================================
-// START OF MODIFIED CODE BLOCK
-// ===================================================================
-
 addAssetForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -387,7 +390,6 @@ addAssetForm.addEventListener('submit', async (e) => {
     const quantity = parseInt(document.getElementById('quantity').value);
     const price = parseFloat(document.getElementById('price').value);
 
-    // --- Validation (no changes here) ---
     if (!assetType) {
         showNotification('Please select an asset type.', 'error');
         return;
@@ -416,64 +418,38 @@ addAssetForm.addEventListener('submit', async (e) => {
             body: JSON.stringify({ ticker, quantity, price, assetType })
         });
 
-        // --- NEW: Robust Error Handling ---
-        if (!response.ok) {
-            // Read the response body as text, as it may not be JSON
-            const responseText = await response.text();
-            let errorMessage;
+        if (response.ok) {
+            const result = await response.json();
+            const totalCost = quantity * price;
+            adjustSettlementAccount('buy', totalCost);
+            addAssetForm.reset();
+            showNotification('Asset added to portfolio successfully!', 'success');
 
-            // Try to parse the text as JSON. If it fails, we use the raw text.
-            try {
-                const errorData = JSON.parse(responseText);
-                errorMessage = errorData.error || `Server responded with status ${response.status}`;
-            } catch (parseError) {
-                // This catches the "Unexpected token" error! The response was not JSON.
-                console.error("Server returned a non-JSON error response:", responseText);
-                errorMessage = `Server error (${response.status}). Check the browser console for details.`;
+            await Promise.all([
+                loadSummary(),
+                loadTransactions()
+            ]);
+            
+            let targetTabName;
+            switch (assetType.toLowerCase()) {
+                case 'stock': targetTabName = 'stocks'; break;
+                case 'bond': targetTabName = 'bonds'; break;
+                case 'mutual fund': targetTabName = 'mutual-funds'; break;
+                case 'etf': targetTabName = 'etfs'; break;
+                case 'cash': targetTabName = 'settlement-account'; break;
+                default: targetTabName = 'portfolio';
             }
-            // Throw an error to be caught by the main catch block
-            throw new Error(errorMessage);
+            
+            showTab(targetTabName);
+
+        }
+    }catch (error) {
+            console.error('❌ Error adding asset:', error);
+            showNotification(error.message, 'error');
         }
 
-        // --- Success Path (no changes here) ---
-        const result = await response.json();
-        console.log('Success response:', result);
-
-        addAssetForm.reset();
-        showNotification('Asset added to portfolio successfully!', 'success');
-
-        await Promise.all([
-            loadSummary(),
-            loadTransactions()
-        ]);
-        
-        // Determine the target tab
-        let targetTabName;
-        switch (assetType.toLowerCase()) {
-            case 'stock': targetTabName = 'stocks'; break;
-            case 'bond': targetTabName = 'bonds'; break;
-            case 'mutual fund': targetTabName = 'mutual-funds'; break;
-            case 'etf': targetTabName = 'etfs'; break;
-            case 'cash': targetTabName = 'cash'; break;
-            default: targetTabName = 'portfolio';
-        }
-        
-        showTab(targetTabName);
-
-    } catch (error) {
-        // This single catch block now handles network errors AND server errors gracefully
-        console.error('❌ Error adding asset:', error);
-        showNotification(error.message, 'error');
-    }
 });
 
-// ===================================================================
-// END OF MODIFIED CODE BLOCK
-// ===================================================================
-
-
-
-// Remove asset from portfolio
 async function removeFromPortfolio(itemId) {
     if (!confirm('Are you sure you want to remove this asset from your portfolio?')) {
         return;
@@ -496,12 +472,10 @@ async function removeFromPortfolio(itemId) {
     }
 }
 
-// Refresh stock prices
 async function refreshPrices() {
     try {
         console.log('🔄 Refreshing stock prices...');
         
-        // Refresh stock prices
         refreshPricesBtn.disabled = true;
         refreshPricesBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Refreshing...</span>';
         
@@ -510,13 +484,11 @@ async function refreshPrices() {
         });
         
         if (response.ok) {
-            // Reload portfolio and summary after refresh
             await Promise.all([
                 loadPortfolio(),
                 loadSummary()
             ]);
             
-            // Show success message briefly
             refreshPricesBtn.innerHTML = '<i class="fas fa-check"></i> <span>Updated!</span>';
             setTimeout(() => {
                 refreshPricesBtn.innerHTML = '<i class="fas fa-sync-alt"></i> <span>Refresh Prices</span>';
@@ -533,7 +505,6 @@ async function refreshPrices() {
         console.error('Error stack:', error.stack);
         console.error('========================');
         
-        // More specific error handling
         if (error.name === 'TypeError' && error.message.includes('fetch')) {
             showNotification('Network error: Could not connect to server', 'error');
         } else if (error.name === 'SyntaxError') {
@@ -552,13 +523,11 @@ async function refreshPrices() {
     }
 }
 
-// Transaction filtering
 function filterTransactions() {
     const filterValue = transactionFilter.value;
     loadTransactions(filterValue);
 }
 
-// Show sell modal for partial asset removal
 function showSellModal(itemId, ticker, maxQuantity, currentPrice) {
     const modal = document.createElement('div');
     modal.className = 'modal show';
@@ -593,7 +562,6 @@ function showSellModal(itemId, ticker, maxQuantity, currentPrice) {
     
     document.body.appendChild(modal);
     
-    // Close modal when clicking outside
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
             closeSellModal();
@@ -601,7 +569,6 @@ function showSellModal(itemId, ticker, maxQuantity, currentPrice) {
     });
 }
 
-// Close sell modal
 function closeSellModal() {
     const modal = document.querySelector('.modal');
     if (modal) {
@@ -609,7 +576,6 @@ function closeSellModal() {
     }
 }
 
-// Process partial sell
 async function processSell(itemId, ticker, maxQuantity) {
     const sellQuantityEl = document.getElementById('sellQuantity');
     const sellPriceEl = document.getElementById('sellPrice');
@@ -647,15 +613,15 @@ async function processSell(itemId, ticker, maxQuantity) {
         });
         
         if (response.ok) {
+            const totalGain = sellQuantity * sellPrice;
+            adjustSettlementAccount('sell', totalGain);
             closeSellModal();
-            // Reload data
             await Promise.all([
                 loadPortfolio(),
                 loadSummary(),
                 loadTransactions()
             ]);
             
-            // Show success message
             showNotification(`Successfully sold ${sellQuantity} shares of ${ticker}!`, 'success');
         } else {
             const error = await response.json();
@@ -667,7 +633,6 @@ async function processSell(itemId, ticker, maxQuantity) {
     }
 }
 
-// Show notification
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
@@ -692,7 +657,6 @@ function showNotification(message, type = 'info') {
     
     document.body.appendChild(notification);
     
-    // Auto remove after 3 seconds
     setTimeout(() => {
         notification.style.animation = 'slideOut 0.3s ease';
         setTimeout(() => notification.remove(), 300);
