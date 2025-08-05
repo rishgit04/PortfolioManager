@@ -254,10 +254,6 @@ function renderPortfolioTable(filteredData = null) {
                             <i class="fas fa-hand-holding-usd"></i>
                             Sell
                         </button>
-                        <button class="btn-remove" onclick="removeAsset(${item.item_id})">
-                            <i class="fas fa-trash"></i>
-                            Remove
-                        </button>
                     </div>
                 </td>
             </tr>
@@ -484,30 +480,6 @@ async function handleAddAsset(event) {
     } catch (error) {
         console.error('Error adding asset:', error);
         showNotification('Error adding asset. Please try again.', 'error');
-    }
-}
-
-// Remove Asset
-async function removeAsset(itemId) {
-    if (!confirm('Are you sure you want to remove this asset from your portfolio?')) {
-        return;
-    }
-    
-    try {
-        const response = await fetch(`${API_BASE}/portfolio/${itemId}`, {
-            method: 'DELETE'
-        });
-        
-        if (response.ok) {
-            await loadDashboardData();
-            showNotification('Asset removed successfully!', 'success');
-        } else {
-            const error = await response.json();
-            showNotification(`Error removing asset: ${error.error}`, 'error');
-        }
-    } catch (error) {
-        console.error('Error removing asset:', error);
-        showNotification('Error removing asset. Please try again.', 'error');
     }
 }
 

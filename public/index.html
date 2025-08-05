@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portified - Portfolio Dashboard</title>
     <link rel="stylesheet" href="dashboard-style.css">
+    <link rel="stylesheet" href="stock-colors.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -41,24 +42,7 @@
                         <span class="value" id="totalValue">0</span>
                     </div>
                 </div>
-                <div class="summary-card">
-                    <div class="summary-icon">
-                        <i class="fas fa-briefcase"></i>
-                    </div>
-                    <div class="summary-info">
-                        <span class="label">Total Assets</span>
-                        <span class="value" id="totalAssets">0</span>
-                    </div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-icon">
-                        <i class="fas fa-exchange-alt"></i>
-                    </div>
-                    <div class="summary-info">
-                        <span class="label">Transactions</span>
-                        <span class="value" id="totalTransactions">0</span>
-                    </div>
-                </div>
+
                 <div class="summary-card">
                     <div class="summary-icon">
                         <i class="fas fa-wallet"></i>
@@ -73,18 +57,20 @@
 
         <!-- Main Content Grid -->
         <div class="main-content">
-            <!-- Performance Chart -->
-            <section class="chart-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-chart-area"></i> Portfolio Performance</h2>
-                </div>
-                <div class="chart-container">
-                    <canvas id="performanceChart"></canvas>
-                </div>
-            </section>
+            <!-- Side by Side Layout -->
+            <div class="side-by-side-container">
+                <!-- Performance Chart -->
+                <section class="chart-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-chart-area"></i> Portfolio Performance</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </section>
 
-            <!-- Portfolio Table -->
-            <section class="portfolio-section">
+                <!-- Portfolio Table -->
+                <section class="portfolio-section">
                 <div class="section-header">
                     <h2><i class="fas fa-wallet"></i> Portfolio Holdings</h2>
                     <div class="section-actions">
@@ -116,6 +102,7 @@
                     </table>
                 </div>
             </section>
+            </div>
 
             <!-- Add Asset Form -->
             <section class="add-asset-section">
