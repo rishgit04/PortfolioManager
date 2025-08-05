@@ -466,7 +466,7 @@ app.get('/api/transactions', async (req, res) => {
     try {
         const { filter } = req.query;
         let query = `
-            SELECT t.*, a.ticker, a.name 
+            SELECT t.*, a.ticker, a.name, a.asset_type 
             FROM transactions t 
             JOIN assets a ON t.asset_id = a.asset_id 
         `;

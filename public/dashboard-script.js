@@ -3,8 +3,6 @@ const API_BASE = '/api';
 
 // DOM Elements
 const totalValueEl = document.getElementById('totalValue');
-const totalAssetsEl = document.getElementById('totalAssets');
-const totalTransactionsEl = document.getElementById('totalTransactions');
 const settlementAccountBalanceEl = document.getElementById('settlementAccountBalance');
 const refreshPricesBtn = document.getElementById('refreshPricesBtn');
 const themeToggle = document.getElementById('themeToggle');
@@ -176,12 +174,6 @@ function updateSummaryCards(summary) {
     if (totalValueEl) {
         totalValueEl.textContent = `$${(summary.totalValue || 0).toFixed(2)}`;
     }
-    if (totalAssetsEl) {
-        totalAssetsEl.textContent = summary.totalAssets || 0;
-    }
-    if (totalTransactionsEl) {
-        totalTransactionsEl.textContent = summary.totalTransactions || 0;
-    }
     if (settlementAccountBalanceEl) {
         settlementAccountBalanceEl.textContent = `$${settlementAccountBalance.toFixed(2)}`;
     }
@@ -254,9 +246,9 @@ function renderPortfolioTable(filteredData = null) {
                             <i class="fas fa-hand-holding-usd"></i>
                             Sell
                         </button>
-                        <button class="btn-remove" onclick="removeAsset(${item.item_id})">
-                            <i class="fas fa-trash"></i>
-                            Remove
+                        <button class="btn-sell-all" onclick="sellAllAsset(${item.item_id}, '${item.ticker}', ${quantity}, ${currentPrice})">
+                            <i class="fas fa-coins"></i>
+                            Sell All
                         </button>
                     </div>
                 </td>
@@ -339,8 +331,12 @@ function filterTransactionTable() {
 // Initialize Performance Chart
 function initializeChart() {
     const ctx = document.getElementById('performanceChart');
-    if (!ctx) return;
+    if (!ctx) {
+        console.error('❌ Performance chart canvas not found!');
+        return;
+    }
     
+    console.log('✅ Initializing performance chart...');
     performanceChart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -396,23 +392,68 @@ function initializeChart() {
 
 // Update Performance Chart
 function updatePerformanceChart() {
-    if (!performanceChart || portfolioData.length === 0) return;
+    console.log('🔄 Updating performance chart...');
+    console.log('Portfolio data:', portfolioData);
     
-    const chartData = portfolioData.map(item => {
-        const currentPrice = item.current_price || item.purchase_price;
+    if (!performanceChart) {
+        console.error('❌ Performance chart not initialized!');
+        return;
+    }
+    
+    if (portfolioData.length === 0) {
+        console.warn('⚠️ No portfolio data available for chart');
+        return;
+    }
+    
+    // Aggregate data by ticker (same assets should be combined)
+    const assetData = {};
+    
+    portfolioData.forEach(item => {
+        const currentPrice = item.current_price || item.avg_buy_price;
         const totalValue = item.quantity * currentPrice;
-        const totalCost = item.quantity * item.purchase_price;
+        const totalCost = item.quantity * item.avg_buy_price;
         const gainLoss = totalValue - totalCost;
         
+        const ticker = item.ticker;
+        
+        if (!assetData[ticker]) {
+            assetData[ticker] = {
+                totalGainLoss: 0,
+                totalValue: 0,
+                totalCost: 0,
+                totalQuantity: 0,
+                assetType: item.asset_type
+            };
+        }
+        
+        assetData[ticker].totalGainLoss += gainLoss;
+        assetData[ticker].totalValue += totalValue;
+        assetData[ticker].totalCost += totalCost;
+        assetData[ticker].totalQuantity += item.quantity;
+    });
+    
+    // Convert to chart data format
+    const chartData = Object.entries(assetData).map(([ticker, data]) => {
         return {
-            label: item.ticker,
-            value: gainLoss,
-            isPositive: gainLoss >= 0
+            label: ticker,
+            value: data.totalGainLoss,
+            isPositive: data.totalGainLoss >= 0,
+            totalValue: data.totalValue,
+            totalCost: data.totalCost,
+            quantity: data.totalQuantity,
+            assetType: data.assetType
         };
     });
     
-    const successColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-success').trim();
-    const dangerColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-danger').trim();
+    // Sort by total gain/loss (highest first)
+    chartData.sort((a, b) => b.value - a.value);
+    
+    console.log('📊 Chart data prepared:', chartData);
+    
+    const successColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-success').trim() || '#10b981';
+    const dangerColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-danger').trim() || '#ef4444';
+    
+    console.log('🎨 Colors - Success:', successColor, 'Danger:', dangerColor);
     
     performanceChart.data.labels = chartData.map(item => item.label);
     performanceChart.data.datasets[0].data = chartData.map(item => item.value);
@@ -422,6 +463,11 @@ function updatePerformanceChart() {
     performanceChart.data.datasets[0].borderColor = chartData.map(item => 
         item.isPositive ? successColor : dangerColor
     );
+    
+    console.log('✅ Chart updated with data:', {
+        labels: performanceChart.data.labels,
+        data: performanceChart.data.datasets[0].data
+    });
     
     performanceChart.update();
 }
@@ -508,6 +554,39 @@ async function removeAsset(itemId) {
     } catch (error) {
         console.error('Error removing asset:', error);
         showNotification('Error removing asset. Please try again.', 'error');
+    }
+}
+
+// Sell All Asset
+async function sellAllAsset(itemId, ticker, quantity, currentPrice) {
+    if (!confirm(`Are you sure you want to sell all ${quantity} shares of ${ticker}?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/portfolio/${itemId}/sell`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                quantity: quantity,
+                price: currentPrice
+            })
+        });
+        
+        if (response.ok) {
+            const totalGain = quantity * currentPrice;
+            adjustSettlementAccount('sell', totalGain);
+            await loadDashboardData();
+            showNotification(`Successfully sold all ${quantity} shares of ${ticker}!`, 'success');
+        } else {
+            const error = await response.json();
+            showNotification(`Error selling asset: ${error.error}`, 'error');
+        }
+    } catch (error) {
+        console.error('Error selling asset:', error);
+        showNotification('Error selling asset. Please try again.', 'error');
     }
 }
 
