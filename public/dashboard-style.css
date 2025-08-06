@@ -1,23 +1,27 @@
 :root {
     /* Dark Theme Colors */
-    --bg-primary: #0f0f23;
-    --bg-secondary: #1a1a2e;
-    --bg-tertiary: #16213e;
-    --bg-card: #1e1e3f;
-    --bg-hover: #252550;
-    --text-primary: #ffffff;
-    --text-secondary: #b8b8d4;
-    --text-muted: #8888aa;
-    --accent-primary: #00d4ff;
-    --accent-secondary: #3aed52;
-    --accent-success: #10b981;
-    --accent-warning: #f59e0b;
-    --accent-danger: #ef4444;
-    --border-color: #2d2d5a;
-    --shadow-light: rgba(0, 212, 255, 0.1);
-    --shadow-medium: rgba(0, 212, 255, 0.2);
+    --bg-primary: #121212;
+    --bg-secondary: #1e1e1e;
+    --bg-tertiary: #252525;
+    --bg-card: #2a2a2a;
+    --bg-hover: #333333;
+    --text-primary: #e0e0e0;
+    --text-secondary: #b0b0b0;
+    --text-muted: #8a8a8a;
+    --accent-primary: #ff6f61;
+    --accent-secondary: #ffca28;
+    --accent-success: #4caf50;
+    --accent-warning: #ff9800;
+    --accent-danger: #f44336;
+    --border-color: #3c3c3c;
+    --shadow-light: rgba(255, 111, 97, 0.1);
+    --shadow-medium: rgba(255, 111, 97, 0.2);
     --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --gradient-card: linear-gradient(145deg, #1e1e3f 0%, #252550 100%);
+    --gradient-card: linear-gradient(145deg, #2a2a2a 0%, #333333 100%);
+    --shadow-hover: rgba(255, 111, 97, 0.3);
+    --shadow-card: 0 8px 20px rgba(0, 0, 0, 0.2);
+    --transition-default: all 0.3s ease;
+    --gradient-accent: linear-gradient(135deg, #ff6f61 0%, #4caf50 100%);
 }
 
 /* Light Theme Variables */
@@ -50,7 +54,8 @@
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg-primary);
+    background: var(--gradient-primary);
+    background-attachment: fixed;
     min-height: 100vh;
     color: var(--text-primary);
     transition: all 0.3s ease;
@@ -79,6 +84,12 @@ body {
     justify-content: space-between;
     align-items: center;
     height: 70px;
+    transition: var(--transition-default);
+}
+
+.compact-header:hover {
+    box-shadow: var(--shadow-card);
+    transform: translateY(-2px);
 }
 
 .header-left .logo {
@@ -141,7 +152,7 @@ body {
     padding: 10px;
     color: var(--text-secondary);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: var(--transition-default);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -154,6 +165,8 @@ body {
     background: var(--bg-hover);
     border-color: var(--accent-primary);
     color: var(--accent-primary);
+    box-shadow: 0 4px 12px var(--shadow-hover);
+    transform: scale(1.1);
 }
 
 /* Main Content Compact */
@@ -217,6 +230,9 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
+    background: linear-gradient(135deg, #764ba2, #667eea);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .section-header h2 i {
@@ -307,6 +323,12 @@ body {
     padding: 25px;
     border: 1px solid var(--border-color);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: var(--transition-default);
+}
+
+.portfolio-section:hover, .transactions-section:hover, .add-asset-section:hover {
+    box-shadow: var(--shadow-card);
+    transform: translateY(-5px);
 }
 
 .table-container {
@@ -426,32 +448,46 @@ body {
     gap: 8px;
 }
 
-.btn-sell, .btn-sell-all {
-    padding: 6px 10px;
+.btn-sell {
+    background: linear-gradient(135deg, #764ba2, #667eea);
+    color: white;
     border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.8rem;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
     font-weight: 600;
-    transition: all 0.2s ease;
+    cursor: pointer;
+    transition: var(--transition-default);
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
 }
 
-.btn-sell {
-    background: var(--accent-warning);
-    color: white;
+.btn-sell:hover {
+    background: linear-gradient(135deg, #667eea, #5a3d91);
+    box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
+    transform: translateY(-2px);
 }
 
 .btn-sell-all {
-    background: var(--accent-success);
+    background: linear-gradient(135deg, #764ba2, #667eea);
     color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-default);
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
-.btn-sell:hover, .btn-sell-all:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+.btn-sell-all:hover {
+    background: linear-gradient(135deg, #667eea, #5a3d91);
+    box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
+    transform: translateY(-2px);
 }
 
 /* Add Asset Form */
@@ -512,7 +548,7 @@ body {
     font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: var(--transition-default);
     display: flex;
     align-items: center;
     gap: 6px;
@@ -521,7 +557,7 @@ body {
 }
 
 .submit-btn:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px) scale(1.05);
     box-shadow: 0 8px 20px var(--shadow-medium);
 }
 
@@ -682,6 +718,12 @@ body {
     max-width: 500px;
     border: 1px solid var(--border-color);
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    animation: fadeIn 0.5s ease-out, scaleUp 0.5s ease-out;
+}
+
+@keyframes scaleUp {
+    from { transform: scale(0.9); }
+    to { transform: scale(1); }
 }
 
 .modal h3 {
