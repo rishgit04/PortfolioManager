@@ -32,13 +32,6 @@ CREATE TABLE portfolio_items (
     FOREIGN KEY (asset_id) REFERENCES assets(asset_id)
 );
 
--- Performance snapshots table
-CREATE TABLE performance_snapshots (
-    ss_id INT PRIMARY KEY AUTO_INCREMENT,
-    ss_date DATE NOT NULL,
-    total_value DECIMAL(12,2) NOT NULL,
-    cash_balance DECIMAL(12,2) DEFAULT 0.00
-);
 
 -- Clear existing data (uncomment these lines if you want to reset all data)
 DELETE FROM portfolio_items;
