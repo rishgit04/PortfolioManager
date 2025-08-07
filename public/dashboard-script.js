@@ -18,6 +18,7 @@ let settlementAccountBalance = 1000; // Will be loaded from API
 let portfolioData = [];
 let transactionData = [];
 let performanceChart = null;
+let allocationChart = null;
 
 // Initialize Dashboard
 document.addEventListener('DOMContentLoaded', () => {
@@ -53,24 +54,58 @@ function toggleTheme() {
 
 // Event Listeners
 function setupEventListeners() {
-    if (themeToggle) {
-        themeToggle.addEventListener('click', toggleTheme);
-    }
+    // Theme Toggle
+    themeToggle.addEventListener('click', toggleTheme);
     
-    if (refreshPricesBtn) {
-        refreshPricesBtn.addEventListener('click', refreshPrices);
-    }
+    // Refresh Prices
+    refreshPricesBtn.addEventListener('click', refreshPrices);
     
-    if (addAssetForm) {
-        addAssetForm.addEventListener('submit', handleAddAsset);
-    }
+    // Add Asset Form
+    addAssetForm.addEventListener('submit', handleAddAsset);
     
-    if (assetTypeFilter) {
-        assetTypeFilter.addEventListener('change', filterPortfolioTable);
-    }
+    // Filter Events
+    assetTypeFilter.addEventListener('change', filterPortfolioTable);
+    transactionFilter.addEventListener('change', filterTransactionTable);
     
-    if (transactionFilter) {
-        transactionFilter.addEventListener('change', filterTransactionTable);
+    // Close modal when clicking outside
+    window.addEventListener('click', (event) => {
+        const modal = document.getElementById('sellModal');
+        if (event.target === modal) {
+            closeSellModal();
+        }
+    });
+
+    // Navigation Tabs
+    const navTabs = document.querySelectorAll('.nav-tab');
+    navTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetScreen = tab.getAttribute('data-screen');
+            switchScreen(targetScreen);
+            
+            // Update active tab
+            navTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+        });
+    });
+}
+
+// Switch between dashboard and performance screens
+function switchScreen(screenId) {
+    // Hide all screens
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+    });
+    
+    // Show the selected screen
+    const targetScreen = document.getElementById(`${screenId}-screen`);
+    if (targetScreen) {
+        targetScreen.classList.add('active');
+        
+        // If switching to performance screen, update the charts
+        if (screenId === 'performance') {
+            updatePerformanceChart();
+            updateAllocationChart();
+        }
     }
 }
 
@@ -108,6 +143,7 @@ async function loadDashboardData() {
         renderPortfolioTable();
         renderTransactionTable();
         updatePerformanceChart();
+        updateAllocationChart();
         
     } catch (error) {
         console.error('Error loading dashboard data:', error);
@@ -240,17 +276,11 @@ function renderPortfolioTable(filteredData = null) {
                     <i class="fas ${gainLossIcon}"></i>
                     ${Math.abs(gainLossPercent).toFixed(2)}%
                 </td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="btn-sell" onclick="showSellModal(${item.item_id}, '${item.ticker}', ${quantity}, ${currentPrice})">
-                            <i class="fas fa-hand-holding-usd"></i>
-                            Sell
-                        </button>
-                        <button class="btn-sell-all" onclick="sellAllAsset(${item.item_id}, '${item.ticker}', ${quantity}, ${currentPrice})">
-                            <i class="fas fa-coins"></i>
-                            Sell All
-                        </button>
-                    </div>
+                <td class="col-actions">
+                    <button class="btn-sell" onclick="showSellModal(${item.item_id}, '${item.ticker}', ${quantity}, ${currentPrice})">
+                        <i class="fas fa-hand-holding-usd"></i>
+                        <span class="btn-text">Sell</span>
+                    </button>
                 </td>
             </tr>
         `;
@@ -330,6 +360,7 @@ function filterTransactionTable() {
 
 // Initialize Performance Chart
 function initializeChart() {
+    // Performance Chart
     const ctx = document.getElementById('performanceChart');
     if (!ctx) {
         console.error('❌ Performance chart canvas not found!');
@@ -388,7 +419,49 @@ function initializeChart() {
             }
         }
     });
+
+    // Asset Allocation Doughnut Chart
+    const allocCtx = document.getElementById('allocationChart');
+    if (!allocCtx) {
+        console.error('❌ Allocation chart canvas not found!');
+        return;
+    }
+    allocationChart = new Chart(allocCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Stocks', 'Bonds'],
+            datasets: [{
+                data: [0, 0],
+                backgroundColor: [
+                    getComputedStyle(document.documentElement).getPropertyValue('--accent-primary').trim() || '#3b82f6',
+                    getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary').trim() || '#8b5cf6'
+                ],
+                borderColor: [
+                    getComputedStyle(document.documentElement).getPropertyValue('--accent-primary').trim() || '#3b82f6',
+                    getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary').trim() || '#8b5cf6'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Stocks vs Bonds Allocation',
+                    color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim()
+                },
+                legend: {
+                    labels: {
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim()
+                    }
+                }
+            }
+        }
+    });
 }
+
 
 // Update Performance Chart
 function updatePerformanceChart() {
@@ -471,6 +544,32 @@ function updatePerformanceChart() {
     
     performanceChart.update();
 }
+
+// Update Asset Allocation Chart
+function updateAllocationChart() {
+    if (!allocationChart) {
+        console.error('❌ Allocation chart not initialized!');
+        return;
+    }
+    if (!portfolioData || portfolioData.length === 0) {
+        allocationChart.data.datasets[0].data = [0, 0];
+        allocationChart.update();
+        return;
+    }
+    let stockValue = 0;
+    let bondValue = 0;
+    portfolioData.forEach(item => {
+        const value = item.quantity * (item.current_price || item.avg_buy_price || 0);
+        if (item.asset_type && item.asset_type.toLowerCase() === 'stock') {
+            stockValue += value;
+        } else if (item.asset_type && item.asset_type.toLowerCase() === 'bond') {
+            bondValue += value;
+        }
+    });
+    allocationChart.data.datasets[0].data = [stockValue, bondValue];
+    allocationChart.update();
+}
+
 
 // Handle Add Asset Form
 async function handleAddAsset(event) {

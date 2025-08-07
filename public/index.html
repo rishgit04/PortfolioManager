@@ -31,131 +31,83 @@
                 </div>
             </div>
             <div class="header-right">
-                <button id="refreshPricesBtn" class="compact-btn">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
-                <button id="themeToggle" class="compact-btn">
-                    <i class="fas fa-moon"></i>
-                </button>
+                <div class="header-tabs">
+                    <button class="nav-tab active" data-screen="dashboard">
+                        <i class="fas fa-tachometer-alt"></i> <span class="tab-text">Dashboard</span>
+                    </button>
+                    <button class="nav-tab" data-screen="performance">
+                        <i class="fas fa-chart-line"></i> <span class="tab-text">Performance</span>
+                    </button>
+                </div>
+                <div class="header-actions">
+                    <button id="refreshPricesBtn" class="compact-btn" title="Refresh Prices">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button id="themeToggle" class="compact-btn" title="Toggle Theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
             </div>
         </header>
 
-        <!-- Main Content Grid -->
-        <div class="main-content-compact">
-            <!-- Top Row: Portfolio Holdings and Performance Side by Side -->
-            <div class="content-grid">
-                <!-- Portfolio Table -->
-                <section class="portfolio-section-compact">
-                <div class="section-header">
-                    <h2><i class="fas fa-wallet"></i> Portfolio Holdings</h2>
-                    <div class="section-actions">
-                        <select id="assetTypeFilter" class="filter-select">
-                            <option value="all">All Assets</option>
-                            <option value="stock">Stocks</option>
-                            <option value="bond">Bonds</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="table-container">
-                    <table id="portfolioTable" class="data-table-compact">
-                        <thead>
-                            <tr>
-                                <th class="col-asset">Asset</th>
-                                <th class="col-type">Type</th>
-                                <th class="col-qty">Qty</th>
-                                <th class="col-buy-price">Buy $</th>
-                                <th class="col-current-price">Current $</th>
-                                <th class="col-value">Value</th>
-                                <th class="col-pnl">P&L</th>
-                                <th class="col-pnl-pct">P&L %</th>
-                                <th class="col-actions">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="portfolioTableBody">
-                            <!-- Portfolio data will be loaded here -->
-                        </tbody>
-                    </table>
-                </div>
-                </section>
 
-                <!-- Performance Chart -->
-                <section class="chart-section-compact">
-                    <div class="section-header-compact">
-                        <h3><i class="fas fa-chart-area"></i> Performance</h3>
-                    </div>
-                    <div class="chart-container-compact">
-                        <canvas id="performanceChart"></canvas>
-                    </div>
-                </section>
-            </div>
 
-            <!-- Bottom Row: Add Asset and Transactions -->
-            <div class="bottom-row">
-                <!-- Add Asset Form -->
-                <section class="add-asset-section-compact">
-                    <div class="section-header-compact">
-                        <h3><i class="fas fa-plus-circle"></i> Add Asset</h3>
-                    </div>
-                <form id="addAssetForm" class="add-asset-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="assetType">
-                                <i class="fas fa-layer-group"></i>
-                                Asset Type
-                            </label>
-                            <select id="assetType" required>
-                                <option value="">Select Type</option>
-                                <option value="stock">Stock</option>
-                                <option value="bond">Bond</option>
+        <!-- Dashboard Screen -->
+        <div id="dashboard-screen" class="screen active">
+            <div class="dashboard-layout">
+                <!-- Left Column: Tables -->
+                <div class="left-column">
+                    <!-- Portfolio Holdings Table -->
+                    <section class="portfolio-section-compact">
+                    <div class="section-header">
+                        <h2><i class="fas fa-wallet"></i> Portfolio Holdings</h2>
+                        <div class="section-actions">
+                            <select id="assetTypeFilter" class="filter-select">
+                                <option value="all">All Assets</option>
+                                <option value="stock">Stocks</option>
+                                <option value="bond">Bonds</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="ticker">
-                                <i class="fas fa-tag"></i>
-                                Ticker Symbol
-                            </label>
-                            <input type="text" id="ticker" required placeholder="e.g., AAPL">
-                        </div>
-                        <div class="form-group">
-                            <label for="quantity">
-                                <i class="fas fa-sort-numeric-up"></i>
-                                Quantity
-                            </label>
-                            <input type="number" id="quantity" required min="1" placeholder="Shares">
-                        </div>
-                        <div class="form-group">
-                            <label for="price">
-                                <i class="fas fa-dollar-sign"></i>
-                                Purchase Price
-                            </label>
-                            <input type="number" id="price" required min="0" step="0.01" placeholder="$0.00">
-                        </div>
-                        <div class="form-group">
-                            <button type="submit" class="submit-btn">
-                                <i class="fas fa-plus"></i>
-                                Add Asset
-                            </button>
-                        </div>
                     </div>
-                </form>
-                </section>
+                    <div class="table-container portfolio-table-container">
+                        <table id="portfolioTable" class="data-table-compact">
+                            <thead>
+                                <tr>
+                                    <th class="col-asset">Asset</th>
+                                    <th class="col-type">Type</th>
+                                    <th class="col-qty">Qty</th>
+                                    <th class="col-buy-price">Buy $</th>
+                                    <th class="col-current-price">Current $</th>
+                                    <th class="col-value">Value</th>
+                                    <th class="col-pnl">P&L</th>
+                                    <th class="col-pnl-pct">P&L %</th>
+                                    <th class="col-actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="portfolioTableBody">
+                                <!-- Portfolio data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    </section>
 
-                <!-- Transaction History Table -->
-                <section class="transactions-section-compact">
-                    <div class="section-header-compact">
-                        <h3><i class="fas fa-history"></i> Recent Transactions</h3>
-                        <select id="transactionFilter" class="filter-select-compact">
+                    <!-- Recent Transactions Table -->
+                    <section class="transactions-section-compact">
+                    <div class="section-header">
+                        <h2><i class="fas fa-history"></i> Recent Transactions</h2>
+                        <select id="transactionFilter" class="filter-select">
                             <option value="all">All</option>
                             <option value="buy">Buy</option>
                             <option value="sell">Sell</option>
                         </select>
                     </div>
-                    <div class="table-container-compact">
+                    <div class="table-container">
                         <table id="transactionsTable" class="data-table-compact">
                             <thead>
                                 <tr>
                                     <th>Date</th>
                                     <th>Asset</th>
+                                    <th>Type</th>
                                     <th>Action</th>
                                     <th>Qty</th>
                                     <th>Price</th>
@@ -167,11 +119,136 @@
                             </tbody>
                         </table>
                     </div>
-                </section>
+                    </section>
+                </div>
+
+                <!-- Right Column: Add Asset Form -->
+                <div class="right-column">
+                    <section class="add-asset-section-compact">
+                    <div class="section-header">
+                        <h2><i class="fas fa-plus-circle"></i> Add Asset</h2>
+                    </div>
+                    <form id="addAssetForm" class="add-asset-form">
+                        <div class="form-row">
+                            <!-- Asset Type -->
+                            <div class="form-group">
+                                <label for="assetType">
+                                    <i class="fas fa-layer-group"></i>
+                                    Type
+                                </label>
+                                <select id="assetType" required>
+                                    <option value="">Select type</option>
+                                    <option value="stock">Stock</option>
+                                    <option value="bond">Bond</option>
+                                    <option value="crypto">Crypto</option>
+                                    <option value="etf">ETF</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Ticker Symbol -->
+                            <div class="form-group">
+                                <label for="ticker">
+                                    <i class="fas fa-tag"></i>
+                                    Ticker
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="ticker" 
+                                    required 
+                                    placeholder="e.g., AAPL"
+                                    pattern="[A-Za-z0-9.-]{1,10}"
+                                    title="Enter a valid ticker symbol (1-10 alphanumeric characters)"
+                                    style="text-transform:uppercase"
+                                >
+                            </div>
+                            
+                            <!-- Quantity -->
+                            <div class="form-group">
+                                <label for="quantity">
+                                    <i class="fas fa-sort-numeric-up"></i>
+                                    Quantity
+                                </label>
+                                <input 
+                                    type="number" 
+                                    id="quantity" 
+                                    required 
+                                    min="0.00000001"
+                                    step="any"
+                                    placeholder="0.00"
+                                >
+                            </div>
+                            
+                            <!-- Price per Unit -->
+                            <div class="form-group">
+                                <label for="price">
+                                    <i class="fas fa-dollar-sign"></i>
+                                    Price per Unit
+                                </label>
+                                <input 
+                                    type="number" 
+                                    id="price" 
+                                    required 
+                                    min="0" 
+                                    step="0.000001" 
+                                    placeholder="0.00"
+                                >
+                            </div>
+                            
+                            <!-- Date -->
+                            <div class="form-group">
+                                <label for="transactionDate">
+                                    <i class="far fa-calendar-alt"></i>
+                                    Date
+                                </label>
+                                <input 
+                                    type="date" 
+                                    id="transactionDate" 
+                                    required
+                                    max=""
+                                >
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <div class="form-group">
+                                <button type="submit" class="submit-btn">
+                                    <i class="fas fa-plus"></i>
+                                    Add Asset
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Screen -->
+        <div id="performance-screen" class="screen">
+            <div class="performance-grid">
+                <div class="performance-chart-container">
+                    <h3><i class="fas fa-chart-line"></i> Portfolio Performance</h3>
+                    <div class="chart-container-full">
+                        <canvas id="performanceChartFull"></canvas>
+                    </div>
+                </div>
+                <div class="performance-chart-container">
+                    <h3><i class="fas fa-chart-pie"></i> Asset Allocation</h3>
+                    <div class="chart-container-full">
+                        <canvas id="allocationChartFull"></canvas>
+                    </div>
+                </div>
+                <div class="performance-chart-container" style="grid-column: span 2;">
+                    <h3><i class="fas fa-chart-bar"></i> Asset Performance</h3>
+                    <div class="chart-container-full">
+                        <canvas id="assetPerformanceChart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
+    <script src="js/screens.js"></script>
+    <script src="js/form.js"></script>
     <script src="dashboard-script.js"></script>
 </body>
 </html>

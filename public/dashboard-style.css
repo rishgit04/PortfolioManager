@@ -55,59 +55,102 @@
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--gradient-primary);
+    background: var(--bg-primary);
     background-attachment: fixed;
     min-height: 100vh;
     color: var(--text-primary);
     transition: all 0.3s ease;
     line-height: 1.6;
+    margin: 0;
+    padding: 0;
+}
+
+/* Screens */
+.screen {
+    display: none;
+    width: 100%;
+    height: calc(100vh - 100px); /* Reduced from 140px to 100px */
+    overflow-y: auto;
+    padding: 12px;
+    position: relative;
+    box-sizing: border-box;
+    margin-top: 0;
+}
+
+.screen.active {
+    display: block;
+    height: calc(100vh - 100px); /* Ensure consistent height */
+    overflow-y: auto;
+}
+
+/* Ensure the screen takes full viewport height */
+html, body {
+    height: 100%;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
 }
 
 /* Dashboard Container */
 .dashboard-container {
     max-width: 100%;
-    margin: 0;
-    padding: 16px;
+    margin: 0 auto;
+    padding: 0 16px 24px;
+    box-sizing: border-box;
+}
+
+.left-column {
+    flex: 1;
+    min-width: 0; /* Allows the column to shrink below its content size */
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    min-height: 100vh;
+    gap: 24px;
+    height: 100%;
+    overflow-y: auto; /* Make it scrollable */
+    padding-right: 5px; /* Add some space for scrollbar */
+}
+
+.right-column {
+    flex: 0 0 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 300px;
+    max-height: calc(100vh - 150px); /* Set a max height */
+    overflow-y: auto; /* Make it scrollable */
+    padding-right: 5px; /* Add some space for scrollbar */
 }
 
 /* Compact Header Styles */
 .compact-header {
-    background: var(--bg-card);
-    border-radius: 12px;
-    padding: 16px 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 70px;
-    transition: var(--transition-default);
+    padding: 12px 20px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+    z-index: 100;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.compact-header:hover {
-    box-shadow: var(--shadow-card);
-    transform: translateY(-2px);
-}
-
-.header-left .logo {
+.header-left {
     display: flex;
     align-items: center;
-    gap: 8px;
+    flex: 0 0 200px;
 }
 
-.header-left .logo i {
-    font-size: 1.5rem;
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2rem;
+    font-weight: 700;
     color: var(--accent-primary);
 }
 
-.header-left .logo span {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--text-primary);
+.logo i {
+    font-size: 1.4rem;
 }
 
 .header-center {
@@ -118,7 +161,11 @@ body {
 
 .summary-compact {
     display: flex;
-    gap: 40px;
+    gap: 30px;
+    background: var(--bg-card);
+    padding: 8px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .summary-item {
@@ -128,47 +175,767 @@ body {
 .summary-item .label {
     display: block;
     font-size: 0.8rem;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     margin-bottom: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
 .summary-item .value {
-    display: block;
-    font-size: 1.3rem;
-    font-weight: 700;
-    /* color: var(--accent-success); */
-    color: var(--value-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .header-right {
     display: flex;
-    gap: 8px;
+    align-items: center;
+    gap: 20px;
+    flex: 0 0 auto;
+}
+
+.header-tabs {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    margin-right: 10px;
+    border-right: 1px solid var(--border-color);
+    padding-right: 20px;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .compact-btn {
-    background: var(--bg-tertiary);
+    background: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 10px;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: var(--transition-default);
+    border-radius: 6px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    font-size: 1rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
 }
 
 .compact-btn:hover {
     background: var(--bg-hover);
-    border-color: var(--accent-primary);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+}
+
+.compact-btn:active {
+    transform: translateY(0);
+}
+
+/* Navigation Tabs in Header */
+.nav-tab {
+    padding: 8px 16px;
+    height: 100%;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    transition: all 0.2s ease;
+    border-radius: 6px;
+    margin: 0 2px;
+}
+
+.nav-tab i {
+    font-size: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.nav-tab .tab-text {
+    transition: opacity 0.2s ease;
+}
+
+.nav-tab:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+}
+
+.nav-tab.active {
     color: var(--accent-primary);
-    box-shadow: 0 4px 12px var(--shadow-hover);
-    transform: scale(1.1);
+    font-weight: 600;
+}
+
+.nav-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -13px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--accent-primary);
+    border-radius: 2px 2px 0 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .header-tabs {
+        padding-right: 15px;
+    }
+    
+    .nav-tab {
+        padding: 8px 12px;
+    }
+    
+    .tab-text {
+        display: none;
+    }
+    
+    .nav-tab i {
+        margin: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-tabs {
+        padding-right: 10px;
+        margin-right: 5px;
+    }
+    
+    .nav-tab {
+        padding: 8px;
+    }
+    
+    .header-right {
+        gap: 8px;
+    }
+    
+    .compact-btn {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+/* Dashboard Grid Layout */
+.dashboard-layout {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+    min-height: 0; /* Fix for Firefox */
+    height: 100%; /* Ensure it takes full height */
+    overflow: hidden; /* Prevent double scrollbars */
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .dashboard-layout {
+        flex-direction: column;
+    }
+    
+    .right-column {
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+}
+
+/* Left Column - Portfolio and Transactions */
+/* Portfolio and Transactions sections */
+.portfolio-section-compact,
+.transactions-section-compact,
+.add-asset-section-compact {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 0;
+    height: auto;
+}
+
+.portfolio-section-compact,
+.transactions-section-compact {
+    flex: 1;
+    min-height: 300px;
+}
+
+/* Add Asset Section */
+.add-asset-section-compact {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0;
+    height: auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.add-asset-section-compact .section-header {
+    margin-bottom: 20px;
+}
+
+.add-asset-section-compact .section-header h2 {
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.add-asset-section-compact .section-header i {
+    color: var(--accent-primary);
+}
+
+/* Form Layout */
+.add-asset-form {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Allow form to shrink */
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+    align-content: flex-start;
+}
+
+.form-group {
+    margin-bottom: 0;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.form-group i {
+    color: var(--accent-primary);
+    font-size: 0.9rem;
+    width: 16px;
+    text-align: center;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--shadow-light);
+    outline: none;
+}
+
+.form-group input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+.form-group input[type="number"]::-webkit-outer-spin-button,
+.form-group input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--accent-primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    margin-top: auto; /* Push to bottom */
+    flex-shrink: 0; /* Prevent button from shrinking */
+}
+
+.submit-btn:hover {
+    background: var(--accent-secondary);
+    transform: translateY(-1px);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+    .right-column {
+        position: relative;
+        top: auto;
+        max-height: none;
+        flex: 1 1 auto;
+    }
+    
+    .form-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .dashboard-layout {
+        flex-direction: column;
+        height: auto;
+    }
+    
+    .left-column,
+    .right-column {
+        width: 100%;
+        max-height: none;
+    }
+    
+    .add-asset-section-compact {
+        height: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .add-asset-section-compact {
+        padding: 15px;
+    }
+    
+    .submit-btn {
+        padding: 10px;
+        font-size: 0.95rem;
+    }
+}
+
+/* For very small screens */
+@media (max-width: 768px) {
+    .add-asset-section-compact {
+        padding: 15px;
+    }
+    
+    .form-group input,
+    .form-group select {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .submit-btn {
+        padding: 12px;
+        font-size: 0.95rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .right-column {
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+}
+
+/* Navigation Tabs - Integrated with Header */
+.nav-tabs {
+    display: flex;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 16px;
+    gap: 1px;
+    height: 48px;
+    align-items: center;
+    margin: 0;
+    position: relative;
+    z-index: 10;
+}
+
+.nav-tab {
+    padding: 0 20px;
+    height: 100%;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    transition: all 0.2s ease;
+    border-radius: 0;
+    margin: 0;
+}
+
+.nav-tab::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: transparent;
+    transition: all 0.2s ease;
+}
+
+.nav-tab:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+}
+
+.nav-tab.active {
+    color: var(--accent-primary);
+    font-weight: 600;
+}
+
+.nav-tab.active::after {
+    background: var(--accent-primary);
+}
+
+.nav-tab i {
+    font-size: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.nav-tab:hover i {
+    transform: translateY(-1px);
+}
+
+/* Adjust header to accommodate tabs */
+.compact-header {
+    z-index: 20;
+    position: relative;
+}
+
+/* Ensure proper spacing between header and content */
+#dashboard-screen,
+#performance-screen {
+    height: calc(100vh - 140px);
+    overflow-y: auto;
+    padding: 16px;
+    background: var(--bg-primary);
+}
+
+/* Add subtle transition for tab content */
+.screen {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0.8; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Performance Screen */
+.performance-screen {
+    padding: 8px 16px 16px;
+    box-sizing: border-box;
+}
+
+.performance-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 16px;
+    height: 100%;
+    min-height: 0;  /* Allows the grid to shrink below its content size */
+    min-width: 0;   /* Fixes flex/grid item min-width issue */
+    box-sizing: border-box;
+    padding: 8px 0;
+}
+
+.performance-chart-container {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    min-height: 0;  /* Allows the container to shrink */
+    display: flex;
+    flex-direction: column;
+}
+
+.performance-chart-container[style*="grid-column: span 2"] {
+    grid-row: 2;
+    grid-column: 1 / -1;
+}
+
+.performance-chart-container h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.chart-container-full {
+    flex: 1;
+    min-height: 0;  /* Allows the chart to shrink */
+    position: relative;
+    width: 100%;
+}
+
+/* Charts Container */
+.charts-combo-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 16px;
+    height: 100%;
+    min-height: 400px;
+}
+
+/* Chart Sections */
+.chart-section-compact {
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: var(--transition-default);
+}
+
+.chart-section-compact:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 200px;
+    flex-grow: 1;
+}
+
+/* Mini Form Styles */
+.add-asset-section-mini {
+    background: var(--bg-card);
+    border-radius: 6px;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.section-header-mini {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.section-header-mini h4 {
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+}
+
+.section-header-mini h4 i {
+    color: var(--accent-primary);
+    font-size: 0.7rem;
+}
+
+.add-asset-form-mini {
+    margin: 0;
+}
+
+.form-grid-mini {
+    display: grid;
+    grid-template-columns: 0.9fr 1fr 0.7fr 0.8fr auto;
+    gap: 4px;
+    align-items: center;
+}
+
+.input-mini {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    padding: 3px 5px;
+    color: var(--text-primary);
+    font-size: 0.7rem;
+    height: 24px;
+}
+
+.input-mini:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px var(--shadow-light);
+}
+
+.submit-btn-mini {
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 3px 6px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: var(--transition-default);
+    height: 24px;
+    min-width: 28px;
+}
+
+.submit-btn-mini:hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 3px 8px var(--shadow-medium);
+}
+
+/* Mini Table Styles */
+.portfolio-section-mini,
+.transactions-section-mini {
+    background: var(--bg-card);
+    border-radius: 6px;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    flex: 1;
+    min-height: 0;
+}
+
+.filter-select-mini {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    padding: 2px 4px;
+    color: var(--text-primary);
+    font-size: 0.65rem;
+    cursor: pointer;
+    height: 20px;
+}
+
+.table-container-mini {
+    overflow-x: auto;
+    margin-top: 5px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    max-height: 160px;
+    overflow-y: auto;
+}
+
+.data-table-mini {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-tertiary);
+    font-size: 0.65rem;
+}
+
+.data-table-mini th {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-weight: 600;
+    padding: 3px 2px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1px;
+}
+
+.data-table-mini td {
+    padding: 3px 2px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.65rem;
+}
+
+.data-table-mini tbody tr:hover {
+    background: var(--bg-hover);
+}
+
+.data-table-mini tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Mini table specific styles */
+.data-table-mini .btn-sell {
+    background: var(--accent-danger);
+    color: white;
+    border: none;
+    border-radius: 2px;
+    padding: 1px 4px;
+    font-size: 0.55rem;
+    cursor: pointer;
+    transition: var(--transition-default);
+}
+
+.data-table-mini .btn-sell:hover {
+    background: var(--accent-danger);
+    transform: scale(1.05);
+}
+
+.data-table-mini .gain-positive {
+    color: var(--accent-success);
+    font-weight: 600;
+}
+
+.data-table-mini .gain-negative {
+    color: var(--accent-danger);
+    font-weight: 600;
+}
+
+.data-table-mini .type-cell {
+    text-transform: capitalize;
+    font-size: 0.6rem;
+    padding: 1px 3px;
+    border-radius: 2px;
+    background: var(--bg-hover);
+    color: var(--text-muted);
+    display: inline-block;
+}
+
+@media (max-width: 1000px) {
+    .dashboard-grid-2x2 {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(2, auto);
+    }
+    .charts-combo-container {
+        flex-direction: column;
+    }
+    .left-column {
+        gap: 8px;
+    }
+    .form-grid-mini {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr auto;
+        gap: 4px;
+    }
+    .submit-btn-mini {
+        grid-column: 1 / -1;
+        justify-self: center;
+    }
 }
 
 /* Main Content Compact */
@@ -227,18 +994,10 @@ body {
 
 .section-header h2 {
     color: var(--text-primary);
-    font-size: 1.5rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: linear-gradient(135deg, #764ba2, #667eea); 
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
 }
 
 .section-header h2 i {
-    color: var(--accent-primary);
+color: var(--accent-primary);
 }
 
 .section-actions {
@@ -286,21 +1045,45 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.chart-container-compact {
-    position: relative;
-    height: 320px;
-    margin-top: 12px;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
 .add-asset-section-compact {
     background: var(--bg-card);
     border-radius: 12px;
-    padding: 16px;
+    padding: 20px;
     border: 1px solid var(--border-color);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin: 16px 0;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: 300px;
+    max-height: 70vh;
     overflow: hidden;
+}
+
+.add-asset-section-compact:hover {
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+}
+
+.add-asset-section-compact .section-header {
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.add-asset-section-compact .section-header h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.add-asset-section-compact .section-header i {
+    color: var(--accent-primary);
+    font-size: 1.1em;
 }
 
 .transactions-section-compact {
@@ -318,6 +1101,244 @@ body {
     width: 100%;
 }
 
+/* Recent Transactions Table */
+#transactionsTable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.85rem;
+    table-layout: fixed;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#transactionsTable th,
+#transactionsTable td {
+    padding: 8px 6px;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+}
+
+#transactionsTable th {
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    font-size: 0.8rem;
+    padding: 10px 6px;
+    border: none;
+    border-bottom: 2px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+#transactionsTable th:last-child {
+    border-right: none;
+}
+
+#transactionsTable td {
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    background: var(--bg-card);
+    transition: all 0.2s ease;
+}
+
+#transactionsTable td:last-child {
+    border-right: none;
+}
+
+#transactionsTable tr:last-child td {
+    border-bottom: none;
+}
+
+#transactionsTable tr:hover td {
+    background-color: var(--bg-hover);
+}
+
+/* Set specific column widths - more compact */
+#transactionsTable th:nth-child(1),
+#transactionsTable td:nth-child(1) {
+    width: 12%; /* Date */
+    min-width: 80px;
+    max-width: 90px;
+}
+
+#transactionsTable th:nth-child(2),
+#transactionsTable td:nth-child(2) {
+    width: 15%; /* Asset */
+    min-width: 60px;
+    max-width: 80px;
+}
+
+#transactionsTable th:nth-child(3),
+#transactionsTable td:nth-child(3) {
+    width: 8%; /* Action */
+    min-width: 45px;
+    max-width: 60px;
+    text-align: center;
+    padding: 6px 2px;
+}
+
+#transactionsTable th:nth-child(4),
+#transactionsTable td:nth-child(4) {
+    width: 12%; /* Quantity */
+    min-width: 50px;
+    max-width: 70px;
+    text-align: right;
+    padding-right: 8px;
+}
+
+#transactionsTable th:nth-child(5),
+#transactionsTable td:nth-child(5) {
+    width: 15%; /* Price */
+    min-width: 60px;
+    max-width: 80px;
+    text-align: right;
+    padding-right: 10px;
+}
+
+#transactionsTable th:nth-child(6),
+#transactionsTable td:nth-child(6) {
+    width: 15%; /* Total */
+    min-width: 65px;
+    max-width: 85px;
+    text-align: right;
+    padding-right: 10px;
+}
+
+/* Table container with custom scrollbar */
+.transactions-section-compact .table-container {
+    max-height: 350px;
+    overflow-y: auto;
+    margin: 15px 0;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+}
+
+/* Custom scrollbar */
+.transactions-section-compact .table-container::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.transactions-section-compact .table-container::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+}
+
+.transactions-section-compact .table-container::-webkit-scrollbar-thumb {
+    background: var(--accent-primary);
+    border-radius: 3px;
+    transition: background 0.2s ease;
+}
+
+.transactions-section-compact .table-container::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-secondary);
+}
+
+/* Style the table header to be sticky */
+.transactions-section-compact .table-container thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Row styling */
+#transactionsTable tbody tr {
+    height: 38px;
+    transition: all 0.2s ease;
+}
+
+#transactionsTable tbody tr:hover {
+    transform: translateX(2px);
+}
+
+/* Style for action cells */
+#transactionsTable .buy-action {
+    color: var(--accent-success);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#transactionsTable .sell-action {
+    color: var(--accent-danger);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Add subtle border between rows */
+#transactionsTable tbody tr:not(:last-child) td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* Add border radius to first and last cells in each row */
+#transactionsTable tr td:first-child {
+    border-left: 1px solid var(--border-color);
+}
+
+#transactionsTable tr td:last-child {
+    border-right: 1px solid var(--border-color);
+}
+
+/* Add border radius to the table */
+.transactions-section-compact .table-container {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Hover effect */
+#transactionsTable tbody tr:hover {
+    background-color: var(--bg-hover);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    #transactionsTable {
+        font-size: 0.85rem;
+    }
+    
+    #transactionsTable th,
+    #transactionsTable td {
+        padding: 6px 4px;
+    }
+}
+
+@media (max-width: 768px) {
+    #transactionsTable {
+        font-size: 0.8rem;
+    }
+    
+    #transactionsTable th:nth-child(1),
+    #transactionsTable td:nth-child(1) {
+        width: 20%;
+        min-width: 80px;
+    }
+    
+    #transactionsTable th:nth-child(3),
+    #transactionsTable td:nth-child(3) {
+        width: 12%;
+        min-width: 50px;
+    }
+    
+    #transactionsTable th,
+    #transactionsTable td {
+        padding: 5px 3px;
+    }
+}
+
 /* Table Styles */
 .portfolio-section, .transactions-section, .add-asset-section {
     background: var(--bg-card);
@@ -333,22 +1354,173 @@ body {
     transform: translateY(-5px);
 }
 
-.table-container {
-    overflow-x: auto;
-    margin-top: 12px;
+.table-container,
+.table-container-compact {
+    margin-top: 8px;
     border-radius: 8px;
     border: 1px solid var(--border-color);
+    min-height: 200px;
+    flex: 1;
+    background: var(--bg-card);
+    position: relative;
+}
+
+/* Individual scrollbars for each table */
+.portfolio-table-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.transactions-section-compact .table-container {
     max-height: 300px;
     overflow-y: auto;
 }
 
-.table-container-compact {
-    overflow-x: auto;
-    margin-top: 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    max-height: 180px;
-    overflow-y: auto;
+/* Ensure the table takes full width */
+.table-container > table,
+.table-container-compact > table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+/* Sticky header */
+.table-container thead th,
+.table-container-compact thead th {
+    position: sticky;
+    top: 0;
+    background: var(--bg-card);
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom scrollbar */
+.table-container::-webkit-scrollbar,
+.table-container-compact::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track,
+.table-container-compact::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb,
+.table-container-compact::-webkit-scrollbar-thumb {
+    background: var(--accent-primary);
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover,
+.table-container-compact::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-secondary);
+}
+
+/* Ensure the table takes full width */
+.table-container > table,
+.table-container-compact > table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+/* Sticky header */
+.table-container thead th,
+.table-container-compact thead th {
+    position: sticky;
+    top: 0;
+    background: var(--bg-card);
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom scrollbar */
+.table-container::-webkit-scrollbar,
+.table-container-compact::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.table-container::-webkit-scrollbar-track,
+.table-container-compact::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+}
+
+.table-container::-webkit-scrollbar-thumb,
+.table-container-compact::-webkit-scrollbar-thumb {
+    background: var(--accent-primary);
+    border-radius: 3px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover,
+.table-container-compact::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-secondary);
+}
+
+/* Ensure tables take full width and have consistent layout */
+.table-container table,
+.table-container-compact table {
+    width: 100%;
+    min-width: 1000px; /* Ensure all columns are visible without horizontal scroll */
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+/* Sticky header for better scrolling */
+.table-container thead th,
+.table-container-compact thead th {
+    position: sticky;
+    top: 0;
+    background: var(--bg-card);
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Custom scrollbar for table containers */
+.table-container::-webkit-scrollbar,
+.table-container-compact::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track,
+.table-container-compact::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb,
+.table-container-compact::-webkit-scrollbar-thumb {
+    background: var(--accent-primary);
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover,
+.table-container-compact::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-secondary);
+}
+
+.table-container::-webkit-scrollbar,
+.table-container-compact::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+}
+
+.table-container::-webkit-scrollbar-thumb,
+.table-container-compact::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.table-container::-webkit-scrollbar-track,
+.table-container-compact::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: 0 0 6px 6px;
 }
 
 .data-table {
@@ -360,8 +1532,358 @@ body {
 .data-table-compact {
     width: 100%;
     border-collapse: collapse;
+    font-size: 0.85rem;
     background: var(--bg-tertiary);
-    font-size: 0.8rem;
+    border-radius: 6px;
+    overflow: hidden;
+    table-layout: fixed;
+}
+
+/* Portfolio Holdings Table Columns */
+.portfolio-section-compact .data-table-compact {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.portfolio-section-compact .data-table-compact th,
+.portfolio-section-compact .data-table-compact td {
+    padding: 10px 8px;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.portfolio-section-compact .data-table-compact th {
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    padding: 12px 8px;
+    white-space: nowrap;
+}
+
+/* Column Widths - Adjusted for better fit */
+.portfolio-section-compact .data-table-compact {
+    table-layout: auto;
+    width: 100%;
+}
+
+.portfolio-section-compact .col-asset { 
+    width: auto;
+    min-width: 80px;
+    text-align: right;
+    padding: 8px 8px;
+}
+
+.portfolio-section-compact .col-type { 
+    width: 60px;
+    text-align: center;
+    padding: 8px 4px;
+}
+
+.portfolio-section-compact .col-qty { 
+    width: 50px;
+    text-align: right;
+    padding: 8px 4px;
+}
+
+.portfolio-section-compact .col-buy-price,
+.portfolio-section-compact .col-current-price,
+.portfolio-section-compact .col-value,
+.portfolio-section-compact .col-pnl,
+.portfolio-section-compact .col-pnl-pct { 
+    width: auto;
+    min-width: 70px;
+    text-align: right;
+    padding: 8px 6px;
+    white-space: nowrap;
+}
+
+.portfolio-section-compact .col-value { 
+    font-weight: 600;
+}
+
+.portfolio-section-compact .col-actions { 
+    width: 130px;
+    text-align: center;
+    padding: 4px 4px;
+    white-space: nowrap;
+}
+
+/* Make the table more compact */
+.portfolio-section-compact .data-table-compact th,
+.portfolio-section-compact .data-table-compact td {
+    padding: 4px 3px;
+    font-size: 0.82rem;
+    line-height: 1.2;
+}
+
+/* Adjust font size for better fit */
+.portfolio-section-compact .data-table-compact {
+    font-size: 0.85rem;
+}
+
+/* Make type badges more compact */
+.type-cell {
+    padding: 2px 6px !important;
+    font-size: 0.75rem !important;
+    display: inline-block;
+    border-radius: 3px;
+}
+
+/* Reduce padding in table cells */
+.portfolio-section-compact .data-table-compact td {
+    padding: 4px 2px !important;
+}
+
+/* Make the table container take full width */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure table takes full width of container */
+.portfolio-section-compact .data-table-compact {
+    width: 100%;
+    table-layout: auto;
+    margin: 0;
+}
+
+/* Ensure action buttons container takes full width */
+.portfolio-section-compact .col-actions > div {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Style action buttons container */
+.portfolio-section-compact .action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    width: 100%;
+    padding: 4px 0;
+}
+
+/* Style sell buttons - more compact */
+.btn-sell {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    background-color: #3b82f6;
+    color: white;
+    width: 100%;
+    max-width: 70px;
+    margin: 0 auto;
+}
+
+.btn-sell:hover {
+    background-color: #2563eb;
+    transform: translateY(-1px);
+}
+
+/* Hide the button text on smaller screens */
+@media (max-width: 1400px) {
+    .btn-sell .btn-text {
+        display: none;
+    }
+    
+    .btn-sell {
+        width: 32px;
+        height: 24px;
+        justify-content: center;
+        padding: 0;
+    }
+    
+    .portfolio-section-compact .col-actions {
+        width: 50px;
+    }
+}
+
+/* Ensure buttons are visible on all rows */
+.portfolio-section-compact .data-table-compact tbody tr:hover .btn-sell,
+.portfolio-section-compact .data-table-compact tbody tr:hover .btn-sell-all {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Ensure consistent alignment for data cells */
+.portfolio-section-compact .data-table-compact td {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.portfolio-section-compact .data-table-compact td.col-asset {
+    font-weight: 500;
+    color: var(--text-primary);
+    padding-left: 12px;
+}
+
+.portfolio-section-compact .data-table-compact td.col-type {
+    text-transform: capitalize;
+}
+
+.portfolio-section-compact .data-table-compact td[class^="col-"]:not(.col-asset):not(.col-type):not(.col-actions) {
+    font-family: 'Roboto Mono', 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+/* Right align all number columns */
+.portfolio-section-compact .data-table-compact td[class^="col-"]:not(.col-asset):not(.col-type):not(.col-actions) {
+    text-align: right;
+    padding-right: 12px;
+}
+
+/* Center align action buttons */
+.portfolio-section-compact .data-table-compact td.col-actions {
+    padding-right: 12px;
+}
+
+/* Hover effect */
+.portfolio-section-compact .data-table-compact tbody tr:hover {
+    background-color: var(--bg-hover);
+}
+
+/* Recent Transactions Table Columns */
+.transactions-section-compact .data-table-compact th,
+.transactions-section-compact .data-table-compact td {
+    padding: 8px 6px;
+}
+
+.transactions-section-compact .data-table-compact th:nth-child(1) { width: 18%; } /* Date */
+.transactions-section-compact .data-table-compact th:nth-child(2) { width: 20%; } /* Asset */
+.transactions-section-compact .data-table-compact th:nth-child(3) { width: 12%; } /* Type */
+.transactions-section-compact .data-table-compact th:nth-child(4) { width: 12%; } /* Action */
+.transactions-section-compact .data-table-compact th:nth-child(5) { width: 12%; } /* Qty */
+.transactions-section-compact .data-table-compact th:nth-child(6) { width: 13%; } /* Price */
+.transactions-section-compact .data-table-compact th:nth-child(7) { width: 13%; } /* Total */
+
+/* Table cell and header alignment and font */
+.data-table-compact th,
+.data-table-compact td {
+    text-align: center;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 0.9rem;
+    padding: 8px 4px;
+    border: 2px solid var(--border-color);
+}
+
+/* Table border styling */
+.data-table-compact {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Header styling with thicker bottom border */
+.data-table-compact th {
+    border-bottom: 3px solid var(--border-color);
+    background-color: var(--bg-secondary);
+    font-weight: 600;
+}
+
+/* Remove double borders between cells */
+.data-table-compact th:not(:last-child),
+.data-table-compact td:not(:last-child) {
+    border-right: 2px solid var(--border-color);
+}
+
+.data-table-compact tr:not(:last-child) td {
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Specific alignment for numbers */
+.data-table-compact td[class^="col-"]:not(.col-asset):not(.col-type):not(.col-actions) {
+    font-feature-settings: 'tnum';
+    font-variant-numeric: tabular-nums;
+}
+
+/* Keep action buttons centered */
+.data-table-compact .col-actions {
+    text-align: center;
+}
+
+/* Color coding for buy/sell actions */
+.buy-action {
+    color: var(--accent-success);
+    font-weight: 500;
+}
+
+.sell-action {
+    color: var(--accent-danger);
+    font-weight: 500;
+}
+
+/* Ensure transaction type colors are applied */
+#transactionsTable .buy {
+    color: var(--accent-success);
+    font-weight: 500;
+}
+
+#transactionsTable .sell {
+    color: var(--accent-danger);
+    font-weight: 500;
+}
+
+/* Hover effects */
+.data-table-compact tbody tr:hover {
+    background-color: var(--bg-hover);
+    transition: background-color 0.2s ease;
+}
+
+/* Set individual height and scrollbar for each table container */
+.portfolio-section-compact .table-container {
+    max-height: 400px; /* Taller container for portfolio table */
+    overflow-y: auto;  /* Add vertical scrollbar when needed */
+}
+
+.transactions-section-compact .table-container {
+    max-height: 300px; /* Standard height for transactions table */
+    overflow-y: auto;  /* Add vertical scrollbar when needed */
+}
+
+/* Style the scrollbar for the tables */
+.portfolio-section-compact .table-container::-webkit-scrollbar,
+.transactions-section-compact .table-container::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+}
+
+.portfolio-section-compact .table-container::-webkit-scrollbar-thumb,
+.transactions-section-compact .table-container::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 4px;
+}
+
+.portfolio-section-compact .table-container::-webkit-scrollbar-track,
+.transactions-section-compact .table-container::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .portfolio-section-compact .col-asset { width: 18%; }
+    .portfolio-section-compact .col-type { width: 10%; }
+    .portfolio-section-compact .col-qty { width: 9%; }
+    .portfolio-section-compact .col-buy-price { width: 12%; }
+    .portfolio-section-compact .col-current-price { width: 12%; }
+    .portfolio-section-compact .col-value { width: 15%; }
+    .portfolio-section-compact .col-pnl { width: 12%; }
+    .portfolio-section-compact .col-pnl-pct { width: 8%; }
+    .portfolio-section-compact .col-actions { width: 5%; }
 }
 
 .data-table th {
@@ -440,9 +1962,17 @@ body {
     font-weight: 600;
 }
 
+.gain-positive i.fa-arrow-up {
+    color: var(--accent-success);
+}
+
 .gain-negative {
     color: var(--accent-danger);
     font-weight: 600;
+}
+
+.gain-negative i.fa-arrow-down {
+    color: var(--accent-danger);
 }
 
 .action-buttons {
@@ -495,72 +2025,301 @@ body {
 /* Add Asset Form */
 .add-asset-form {
     margin-top: 20px;
+    max-width: 100%;
+    width: 100%;
 }
 
-.form-row {
+.add-asset-form .form-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px;
-    align-items: end;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    align-items: start;
+    margin-bottom: 0;
 }
 
-.form-group {
-    display: flex;
-    flex-direction: column;
+@media (max-width: 768px) {
+    .add-asset-form .form-row {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
 }
 
-.form-group label {
-    color: var(--text-secondary);
-    font-weight: 600;
-    margin-bottom: 6px;
+.add-asset-form .form-group {
+    margin: 0;
+    position: relative;
+}
+
+.add-asset-form .form-group {
+    position: relative;
+}
+
+.add-asset-form label {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.85rem;
-}
-
-.form-group label i {
-    color: var(--accent-primary);
-    font-size: 0.8rem;
-}
-
-.form-group input, .form-group select {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 8px 10px;
-    color: var(--text-primary);
+    gap: 8px;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
     font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.add-asset-form label i {
+    color: var(--text-muted);
+    font-size: 0.9em;
+    width: 16px;
+    text-align: center;
+}
+
+.add-asset-form .form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.add-asset-form input,
+.add-asset-form select {
+    width: 100%;
+    padding: 10px 36px 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: 0.95rem;
     transition: all 0.2s ease;
-    height: 36px;
+    height: 42px;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.form-group input:focus, .form-group select:focus {
-    outline: none;
+.add-asset-form input:focus,
+.add-asset-form select:focus {
     border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px var(--shadow-light);
+    box-shadow: 0 0 0 2px var(--shadow-light);
+    outline: none;
 }
 
-.submit-btn {
+/* Remove default number input spinners */
+.add-asset-form input[type="number"] {
+    -webkit-appearance: textfield;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.add-asset-form input[type="number"]::-webkit-outer-spin-button,
+.add-asset-form input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin: 0;
+}
+
+.add-asset-form input[type="date"] {
+    padding-right: 12px;
+    background-image: none;
+}
+
+.add-asset-form input[type="number"] {
+    -webkit-appearance: textfield;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.add-asset-form input[type="number"]::-webkit-outer-spin-button,
+.add-asset-form input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin: 0;
+}
+
+.add-asset-form input:focus,
+.add-asset-form select:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px var(--shadow-light);
+    outline: none;
+}
+
+.add-asset-form button[type="submit"] {
+    width: 100%;
+    padding: 12px 16px;
     background: var(--gradient-primary);
     color: white;
     border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 0.9rem;
+    border-radius: 8px;
     font-weight: 600;
+    font-size: 1rem;
     cursor: pointer;
-    transition: var(--transition-default);
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
-    gap: 6px;
     justify-content: center;
-    height: 36px;
+    gap: 8px;
+    height: 42px;
+    margin-top: 8px;
+}
+
+.add-asset-form button[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.5);
+}
+
+.add-asset-form button[type="submit"]:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+}
+
+/* Notification Styles */
+.notification {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    padding: 15px 25px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    font-size: 0.95rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    z-index: 1000;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    max-width: 350px;
+    pointer-events: none;
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.notification.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.notification.error {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.notification.info {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+/* Focus styles for better accessibility */
+.add-asset-form input:focus,
+.add-asset-form select:focus,
+.add-asset-form button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.4);
+}
+
+/* Loading state for submit button */
+.add-asset-form button[type="submit"].loading {
+    position: relative;
+    color: transparent;
+    pointer-events: none;
+}
+
+.add-asset-form button[type="submit"].loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments for form */
+@media (max-width: 768px) {
+    .add-asset-form .form-row {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .add-asset-form button[type="submit"] {
+        grid-column: 1 / -1;
+    }
+}
+
+.form-group {
+    margin-bottom: 0;
+    flex: 1;
+    min-width: 0;
+}
+
+.form-group label {
+    font-size: 0.7rem;
+    margin-bottom: 3px;
+    color: var(--text-muted);
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 5px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    height: 32px;
+    transition: var(--transition-default);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px var(--shadow-light);
+    outline: none;
+}
+
+.submit-btn {
+    background: var(--accent-primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: var(--transition-default);
+    height: 32px;
+    width: 100%;
+    white-space: nowrap;
+    background-clip: padding-box;
+    -webkit-background-clip: padding-box;
+    -moz-background-clip: padding-box;
 }
 
 .submit-btn:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 20px var(--shadow-medium);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px var(--shadow-light);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px var(--shadow-light);
 }
 
 /* Transaction Table Specific */
@@ -597,18 +2356,74 @@ body {
 
 /* Responsive Design */
 @media (max-width: 1200px) {
-    .content-grid {
+    .dashboard-grid-2x2 {
         grid-template-columns: 1fr;
+        grid-template-rows: auto;
         height: auto;
     }
     
-    .bottom-row {
-        grid-template-columns: 1fr;
-        height: auto;
+    .left-column, 
+    .right-column {
+        grid-row: auto;
+        min-height: 400px;
     }
     
-    .chart-container-compact {
-        height: 200px;
+    .chart-container {
+        min-height: 300px;
+    }
+    
+    .add-asset-section-compact {
+        margin-bottom: 16px;
+    }
+    
+    .charts-combo-container {
+        min-height: 300px;
+    }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 8px;
+        gap: 8px;
+    }
+    
+    .form-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .compact-header {
+        padding: 8px 12px;
+        height: auto;
+        flex-wrap: wrap;
+    }
+    
+    .header-center {
+        order: 3;
+        width: 100%;
+        margin-top: 8px;
+    }
+    
+    .summary-compact {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .summary-item .label {
+        font-size: 0.7rem;
+    }
+    
+    .summary-item .value {
+        font-size: 1rem;
+    }
+    
+    .table-container,
+    .table-container-compact {
+        max-height: 300px;
+    }
+    
+    .chart-section-compact {
+        min-height: 250px;
     }
 }
 
