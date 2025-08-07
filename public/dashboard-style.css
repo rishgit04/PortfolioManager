@@ -44,6 +44,7 @@
     --shadow-medium: rgba(59, 130, 246, 0.2);
     --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     --gradient-card: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    --value-primary: #667eea;
 }
 
 * {
@@ -137,7 +138,8 @@ body {
     display: block;
     font-size: 1.3rem;
     font-weight: 700;
-    color: var(--accent-success);
+    /* color: var(--accent-success); */
+    color: var(--value-primary);
 }
 
 .header-right {
@@ -230,7 +232,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: linear-gradient(135deg, #764ba2, #667eea);
+    background: linear-gradient(135deg, #764ba2, #667eea); 
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }

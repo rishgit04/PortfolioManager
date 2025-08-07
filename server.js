@@ -158,21 +158,6 @@ app.listen(PORT, async () => {
     // Load settlement account balance from database
     await loadSettlementAccountBalance();
     
-    // Optional: Set up periodic updates after server is stable
-    // Uncomment the lines below once the server is working properly
-    /*
-    setTimeout(() => {
-        updateStockPrices().catch(error => {
-            console.error('❌ Error in stock price update:', error);
-        });
-    }, 10000); // Wait 10 seconds before first update
-    
-    setInterval(() => {
-        updateStockPrices().catch(error => {
-            console.error('❌ Error in scheduled stock price update:', error);
-        });
-    }, 5 * 60 * 1000);
-    */
 });
 
 // Middleware
