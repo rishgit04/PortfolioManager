@@ -91,55 +91,6 @@
 
             <!-- Bottom Row: Add Asset and Transactions -->
             <div class="bottom-row">
-                <!-- Add Asset Form -->
-                <section class="add-asset-section-compact">
-                    <div class="section-header-compact">
-                        <h3><i class="fas fa-plus-circle"></i> Add Asset</h3>
-                    </div>
-                <form id="addAssetForm" class="add-asset-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="assetType">
-                                <i class="fas fa-layer-group"></i>
-                                Asset Type
-                            </label>
-                            <select id="assetType" required>
-                                <option value="">Select Type</option>
-                                <option value="stock">Stock</option>
-                                <option value="bond">Bond</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="ticker">
-                                <i class="fas fa-tag"></i>
-                                Ticker Symbol
-                            </label>
-                            <input type="text" id="ticker" required placeholder="e.g., AAPL">
-                        </div>
-                        <div class="form-group">
-                            <label for="quantity">
-                                <i class="fas fa-sort-numeric-up"></i>
-                                Quantity
-                            </label>
-                            <input type="number" id="quantity" required min="1" placeholder="Shares">
-                        </div>
-                        <div class="form-group">
-                            <label for="price">
-                                <i class="fas fa-dollar-sign"></i>
-                                Purchase Price
-                            </label>
-                            <input type="number" id="price" required min="0" step="0.01" placeholder="$0.00">
-                        </div>
-                        <div class="form-group">
-                            <button type="submit" class="submit-btn">
-                                <i class="fas fa-plus"></i>
-                                Add Asset
-                            </button>
-                        </div>
-                    </div>
-                </form>
-                </section>
-
                 <!-- Transaction History Table -->
                 <section class="transactions-section-compact">
                     <div class="section-header-compact">
@@ -156,6 +107,7 @@
                                 <tr>
                                     <th>Date</th>
                                     <th>Asset</th>
+                                    <th>Type</th>
                                     <th>Action</th>
                                     <th>Qty</th>
                                     <th>Price</th>
@@ -167,6 +119,55 @@
                             </tbody>
                         </table>
                     </div>
+                </section>
+
+                <!-- Add Asset Form -->
+                <section class="add-asset-section-compact">
+                    <div class="section-header-compact">
+                        <h3><i class="fas fa-plus-circle"></i> Add Asset</h3>
+                    </div>
+                    <form id="addAssetForm" class="add-asset-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="assetType">
+                                    <i class="fas fa-layer-group"></i>
+                                    Asset Type
+                                </label>
+                                <select id="assetType" required>
+                                    <option value="">Select Type</option>
+                                    <option value="stock">Stock</option>
+                                    <option value="bond">Bond</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="ticker">
+                                    <i class="fas fa-tag"></i>
+                                    Ticker Symbol
+                                </label>
+                                <input type="text" id="ticker" required placeholder="e.g., AAPL">
+                            </div>
+                            <div class="form-group">
+                                <label for="quantity">
+                                    <i class="fas fa-sort-numeric-up"></i>
+                                    Quantity
+                                </label>
+                                <input type="number" id="quantity" required min="1" placeholder="Shares">
+                            </div>
+                            <div class="form-group">
+                                <label for="price">
+                                    <i class="fas fa-dollar-sign"></i>
+                                    Purchase Price
+                                </label>
+                                <input type="number" id="price" required min="0" step="0.01" placeholder="$0.00">
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="submit-btn">
+                                    <i class="fas fa-plus"></i>
+                                    Add Asset
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </section>
             </div>
         </div>

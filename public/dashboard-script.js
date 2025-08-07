@@ -246,10 +246,6 @@ function renderPortfolioTable(filteredData = null) {
                             <i class="fas fa-hand-holding-usd"></i>
                             Sell
                         </button>
-                        <button class="btn-sell-all" onclick="sellAllAsset(${item.item_id}, '${item.ticker}', ${quantity}, ${currentPrice})">
-                            <i class="fas fa-coins"></i>
-                            Sell All
-                        </button>
                     </div>
                 </td>
             </tr>

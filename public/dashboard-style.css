@@ -173,9 +173,31 @@ body {
 
 .bottom-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 2fr 1fr;
     gap: 16px;
-    height: 250px;
+    height: auto;
+}
+
+.transactions-section-compact {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    grid-column: 1 / 2;
+    height: auto;
+}
+
+.add-asset-section-compact {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    grid-column: 2 / 3;
+    height: auto;
 }
 
 /* Compact Section Headers */
@@ -244,7 +266,7 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 6px;
     padding: 4px 8px;
-    color: var(--text-primary);
+    color: var (--text-primary);
     font-size: 0.8rem;
     cursor: pointer;
     height: 28px;
@@ -273,24 +295,6 @@ body {
     height: 320px;
     margin-top: 12px;
     border-radius: 8px;
-    overflow: hidden;
-}
-
-.add-asset-section-compact {
-    background: var(--bg-card);
-    border-radius: 12px;
-    padding: 16px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-}
-
-.transactions-section-compact {
-    background: var(--bg-card);
-    border-radius: 12px;
-    padding: 16px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
 
@@ -426,7 +430,7 @@ body {
     gap: 8px;
 }
 
-.btn-sell, .btn-sell-all {
+.btn-sell {
     padding: 6px 10px;
     border: none;
     border-radius: 6px;
@@ -437,19 +441,12 @@ body {
     display: flex;
     align-items: center;
     gap: 4px;
-}
-
-.btn-sell {
-    background: var(--accent-warning);
+    /* background: var(--accent-warning); */
+    background: var(--gradient-primary);
     color: white;
 }
 
-.btn-sell-all {
-    background: var(--accent-success);
-    color: white;
-}
-
-.btn-sell:hover, .btn-sell-all:hover {
+.btn-sell:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
@@ -720,4 +717,5 @@ body {
 
 .modal-btn:hover {
     transform: translateY(-2px);
+    box-shadow: 0 8px 20px var(--shadow-medium);
 }
